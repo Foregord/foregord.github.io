@@ -3,31 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Form Data Manager</title>
-
+    <title>TESDIA</title>
     <!-- Meta untuk mencegah indexing Google -->
     <meta name="robots" content="noindex, nofollow, noarchive, nosnippet" />
     <meta name="googlebot" content="noindex, nofollow" />
-
     <!-- Tailwind CSS -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-
-    <!-- Custom config untuk Tailwind -->
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              primary: "#4facfe",
-              secondary: "#00f2fe",
-              accent: "#667eea",
-              dark: "#764ba2",
-            },
-          },
-        },
-      };
-    </script>
-
     <style>
       .gradient-bg {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -54,8 +35,12 @@
       <div
         class="gradient-primary rounded-2xl p-6 mb-6 text-center text-white shadow-2xl"
       >
-        <h1 class="text-3xl md:text-4xl font-bold mb-2">📊 Data Manager</h1>
-        <p class="text-lg opacity-90">Kelola data Anda dengan mudah</p>
+        <img
+          src="https://tesdia.id/wp-content/uploads/2023/03/cropped-hanya-logo-DIA.webp"
+          alt="Logo Tesdia"
+          class="mx-auto mb-4 w-24 h-24 rounded-full shadow-lg"
+        />
+        <h1 class="text-3xl md:text-4xl font-bold mb-2">Tesdia Data Manager</h1>
       </div>
 
       <!-- Main Content -->
@@ -67,7 +52,6 @@
           >
             Input Data
           </h2>
-
           <!-- Success Message -->
           <div
             id="successMessage"
@@ -75,7 +59,6 @@
           >
             <span class="font-medium">✅ Data berhasil disimpan!</span>
           </div>
-
           <!-- Error Message -->
           <div
             id="errorMessage"
@@ -85,7 +68,6 @@
               >❌ Mohon lengkapi semua field yang diperlukan!</span
             >
           </div>
-
           <!-- Loading Message -->
           <div
             id="loadingMessage"
@@ -599,7 +581,6 @@
         };
         reader.readAsText(file);
       }
-
       // Initialize display
       updateDataDisplay();
     </script>
