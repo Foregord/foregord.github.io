@@ -1,13 +1,7 @@
 function doOptions(e) {
-  return ContentService.createTextOutput("")
-    .setMimeType(ContentService.MimeType.TEXT)
-    .setHeaders({
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type",
-      "Access-Control-Max-Age": "3600",
-    });
-}
+  return ContentService
+    .createTextOutput("")
+    .setMimeType(ContentService.MimeType.TEXT);
 
 function doGet(e) {
   try {
@@ -108,16 +102,27 @@ function doPost(e) {
 
 // Fungsi helper untuk membuat response dengan CORS headers
 function createResponse(data) {
-  const output = ContentService.createTextOutput(
-    JSON.stringify(data)
-  ).setMimeType(ContentService.MimeType.JSON);
+  return ContentService
+    .createTextOutput(JSON.stringify(data))
+    .setMimeType(ContentService.MimeType.JSON);
+}
 
-  // Set CORS headers using setHeaders method
-  output.setHeaders({
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type",
-  });
-
-  return output;
+// Fungsi test untuk memastikan script berfungsi
+function testFunction() {
+  try {
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    console.log("Spreadsheet Name:", SpreadsheetApp.getActiveSpreadsheet().getName());
+    console.log("Sheet Name:", sheet.getName());
+    console.log("Last Row:", sheet.getLastRow());
+    
+    // Test tambah data
+    const testRow = ['TEST', new Date(), 'Test User', '081234567890', 'Test School', 'Test Position', 'jempol', 'positif', 'Test', '2025-01-01'];
+    sheet.appendRow(testRow);
+    console.log("Test data added successfully");
+    
+    return "Test berhasil!";
+  } catch (error) {
+    console.error("Error in test:", error);
+    return "Test error: " + error.toString();
+  }
 }
