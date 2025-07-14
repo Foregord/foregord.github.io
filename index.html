@@ -329,9 +329,9 @@
     </div>
 
     <script>
-      // GANTI URL INI DENGAN URL APPS SCRIPT ANDA
+      // GANTI URL INI DENGAN URL APPS SCRIPT ANDA YANG BARU
       const APPS_SCRIPT_URL =
-        "https://script.google.com/macros/s/AKfycbwlBjrvc_ea-Ndk6RTU9cke4lNSYyi8cREZUcDBmf_OkcptYMtBt3bxz5Ba69mhphgn/exec";
+        "https://script.google.com/macros/s/AKfycbzUnH6PGmJKP-ofPW3K4ip8lAZ4ArzliEGMz_DuZCE28Zh7nVvhrGRSY5HmtIh394ub/exec";
 
       // Data storage (hybrid: localStorage + Google Sheets)
       let dataStore = JSON.parse(localStorage.getItem("userData") || "[]");
@@ -435,6 +435,8 @@
       // Fungsi workaround untuk CORS dengan dynamic script
       function saveToGoogleSheets(data) {
         return new Promise((resolve, reject) => {
+          console.log("Mengirim data ke Google Sheets:", data);
+
           // Buat form tersembunyi untuk submit
           const form = document.createElement("form");
           form.method = "POST";
@@ -449,28 +451,62 @@
           input.value = JSON.stringify(data);
           form.appendChild(input);
 
+          console.log("Form data yang dikirim:", JSON.stringify(data));
+
           // Buat iframe tersembunyi
           const iframe = document.createElement("iframe");
           iframe.name = "hidden_iframe";
           iframe.style.display = "none";
+
+          let resolved = false;
+
           iframe.onload = function () {
-            // Cleanup
-            setTimeout(() => {
-              document.body.removeChild(form);
-              document.body.removeChild(iframe);
-              resolve();
-            }, 1000);
+            if (!resolved) {
+              resolved = true;
+              console.log("Form berhasil disubmit ke Google Sheets");
+
+              // Cleanup
+              setTimeout(() => {
+                if (document.body.contains(form))
+                  document.body.removeChild(form);
+                if (document.body.contains(iframe))
+                  document.body.removeChild(iframe);
+                resolve();
+              }, 1000);
+            }
           };
+
           iframe.onerror = function () {
-            document.body.removeChild(form);
-            document.body.removeChild(iframe);
-            reject(new Error("Failed to submit to Google Sheets"));
+            if (!resolved) {
+              resolved = true;
+              console.error("Error submitting form to Google Sheets");
+
+              if (document.body.contains(form)) document.body.removeChild(form);
+              if (document.body.contains(iframe))
+                document.body.removeChild(iframe);
+              reject(new Error("Failed to submit to Google Sheets"));
+            }
           };
 
           // Tambahkan ke DOM dan submit
           document.body.appendChild(iframe);
           document.body.appendChild(form);
+
+          console.log("Submitting form ke:", APPS_SCRIPT_URL);
           form.submit();
+
+          // Fallback timeout
+          setTimeout(() => {
+            if (!resolved) {
+              resolved = true;
+              console.log("Form submit timeout - assuming success");
+
+              if (document.body.contains(form)) document.body.removeChild(form);
+              if (document.body.contains(iframe))
+                document.body.removeChild(iframe);
+              resolve();
+            }
+          }, 5000);
         });
       }
 
