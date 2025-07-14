@@ -338,7 +338,7 @@
     <script>
       // GANTI URL INI DENGAN URL APPS SCRIPT ANDA YANG BARU
       const APPS_SCRIPT_URL =
-        "https://script.google.com/macros/s/AKfycbxrJu3nqCQdR16Ebi2WLdaQKg4eCqK68ZWUoPO9iZcNP4uMTdCERCqfLb2lc8pR9eepDQ/exec";
+        "https://script.google.com/macros/s/AKfycbzQKz4lO1UrkQ-viUx9Ua_sA8vmF6O5ky7iqfBlFRYJ0gxpXHtbYD7CjmzGdUzmEB4DeA/exec";
 
       // Data storage (hybrid: localStorage + Google Sheets)
       let dataStore = JSON.parse(localStorage.getItem("userData") || "[]");
@@ -539,6 +539,11 @@
         console.log("Testing Google Sheets connection...");
         console.log("URL:", APPS_SCRIPT_URL);
 
+        if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes("YOUR_SCRIPT_ID")) {
+          alert("Error: URL Google Apps Script belum diset dengan benar!");
+          return;
+        }
+
         try {
           // Test dengan data dummy
           const testData = {
@@ -550,15 +555,22 @@
             jabatan: "TEST",
             tipejari: "jempol",
             indikasi: "positif",
-            keterangan: "Test",
+            keterangan: "Test connection",
             followup: "2025-01-01",
           };
 
+          console.log("Mengirim test data:", testData);
+
+          // Gunakan cara yang sama seperti form submission
           await saveToGoogleSheets(testData);
-          alert("Test berhasil! Cek console untuk detail.");
+
+          console.log("Test berhasil!");
+          alert(
+            "✅ Test connection berhasil! Cek Google Sheets untuk melihat data test."
+          );
         } catch (error) {
-          console.error("Test failed:", error);
-          alert("Test gagal: " + error.message);
+          console.error("Test gagal:", error);
+          alert("❌ Test connection gagal: " + error.message);
         }
       }
 
