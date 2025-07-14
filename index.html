@@ -3,7 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>TESDIA</title>
+    <link
+      rel="icon"
+      type="image/x-icon"
+      href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📊</text></svg>"
+    />
+    <title>TESDIA DATA MANAGER</title>
     <!-- Meta untuk mencegah indexing Google -->
     <meta name="robots" content="noindex, nofollow, noarchive, nosnippet" />
     <meta name="googlebot" content="noindex, nofollow" />
@@ -40,7 +45,9 @@
           alt="Logo Tesdia"
           class="mx-auto mb-4 w-24 h-24 rounded-full shadow-lg"
         />
-        <h1 class="text-3xl md:text-4xl font-bold mb-2">Tesdia Data Manager</h1>
+        <h1 class="text-3xl md:text-4xl font-bold mb-2">
+          Tesdia Data Manager Bandung
+        </h1>
       </div>
 
       <!-- Main Content -->
@@ -366,73 +373,41 @@
           showLoading(true);
 
           try {
-            // Simpan ke Google Sheets
+            // Coba simpan ke Google Sheets menggunakan form data
+            const formDataToSend = new FormData();
+            formDataToSend.append("data", JSON.stringify(data));
+
             const response = await fetch(APPS_SCRIPT_URL, {
               method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify(data),
+              body: formDataToSend,
             });
 
-            // Simpan juga ke localStorage sebagai backup
-            dataStore.push(data);
-            localStorage.setItem("userData", JSON.stringify(dataStore));
-
-            // Reset form dan update display
-            e.target.reset();
-            showMessage("successMessage");
-            updateDataDisplay();
+            if (response.ok) {
+              const result = await response.json();
+              if (result.success) {
+                console.log("Data berhasil disimpan ke Google Sheets");
+              }
+            }
           } catch (error) {
-            console.error("Error:", error);
-            // Jika gagal ke Google Sheets, tetap simpan ke localStorage
-            dataStore.push(data);
-            localStorage.setItem("userData", JSON.stringify(dataStore));
-
-            e.target.reset();
-            showMessage("successMessage");
-            updateDataDisplay();
-          } finally {
-            showLoading(false);
+            console.error("Error saving to Google Sheets:", error);
           }
+
+          // Simpan ke localStorage (selalu berhasil)
+          dataStore.push(data);
+          localStorage.setItem("userData", JSON.stringify(dataStore));
+
+          // Reset form dan update display
+          e.target.reset();
+          showMessage("successMessage");
+          updateDataDisplay();
+          showLoading(false);
         });
 
-      function showMessage(messageId) {
-        const message = document.getElementById(messageId);
-        message.classList.remove("hidden");
-        setTimeout(() => {
-          message.classList.add("hidden");
-        }, 3000);
-      }
-
-      function showLoading(show) {
-        const loadingMessage = document.getElementById("loadingMessage");
-        if (show) {
-          loadingMessage.classList.remove("hidden");
-        } else {
-          loadingMessage.classList.add("hidden");
-        }
-      }
-
-      // Tambahkan fungsi updateStats yang hilang
-      function updateStats() {
-        const totalData = dataStore.length;
-        const totalPositif = dataStore.filter(
-          (item) => item.indikasi === "positif"
-        ).length;
-        const totalNegatif = dataStore.filter(
-          (item) => item.indikasi === "negatif"
-        ).length;
-
-        document.getElementById("totalData").textContent = totalData;
-        document.getElementById("totalPositif").textContent = totalPositif;
-        document.getElementById("totalNegatif").textContent = totalNegatif;
-      }
-
+      // Update Google Apps Script method
       async function syncWithGoogleSheets() {
         showLoading(true);
         try {
-          const response = await fetch(APPS_SCRIPT_URL, {
+          const response = await fetch(APPS_SCRIPT_URL + "?action=get", {
             method: "GET",
           });
 
@@ -453,7 +428,7 @@
         } catch (error) {
           console.error("Error syncing:", error);
           alert(
-            "Gagal melakukan sync dengan Google Sheets. Pastikan URL Apps Script sudah benar."
+            "Gagal melakukan sync dengan Google Sheets. Periksa koneksi internet."
           );
         } finally {
           showLoading(false);
