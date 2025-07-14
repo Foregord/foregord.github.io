@@ -36,13 +36,49 @@ function doPost(e) {
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
     let data;
 
-    // Handle berbagai format input
-    if (e.postData && e.postData.contents) {
-      data = JSON.parse(e.postData.contents);
-    } else if (e.parameter && e.parameter.data) {
-      data = JSON.parse(e.parameter.data);
+    // Debug: log apa yang diterima
+    console.log("=== DOPOST DEBUG ===");
+    console.log("e.postData:", e.postData);
+    console.log("e.parameter:", e.parameter);
+
+    // Coba debug dulu
+    const debugResult = debugFormData(e);
+    if (debugResult) {
+      data = debugResult;
     } else {
-      throw new Error("No data received");
+      // Handle berbagai format input
+      if (e.postData && e.postData.contents) {
+        if (e.postData.type === "application/x-www-form-urlencoded") {
+          // Handle form-encoded data
+          const params = new URLSearchParams(e.postData.contents);
+          const dataParam = params.get("data");
+          if (dataParam) {
+            data = JSON.parse(dataParam);
+          } else {
+            throw new Error("No data parameter found in form");
+          }
+        } else {
+          // Jika data dikirim sebagai JSON body
+          data = JSON.parse(e.postData.contents);
+        }
+      } else if (e.parameter && e.parameter.data) {
+        // Jika data dikirim sebagai form parameter
+        try {
+          data = JSON.parse(e.parameter.data);
+        } catch (parseError) {
+          console.error("Error parsing parameter data:", parseError);
+          throw new Error(
+            "Failed to parse data parameter: " + parseError.toString()
+          );
+        }
+      } else {
+        throw new Error(
+          "No valid data received. postData: " +
+            JSON.stringify(e.postData) +
+            ", parameter: " +
+            JSON.stringify(e.parameter)
+        );
+      }
     }
 
     // Log data yang diterima
@@ -97,27 +133,80 @@ function doPost(e) {
 
 // Fungsi helper untuk membuat response dengan CORS headers
 function createResponse(data) {
-  return ContentService
-    .createTextOutput(JSON.stringify(data))
-    .setMimeType(ContentService.MimeType.JSON);
+  return ContentService.createTextOutput(JSON.stringify(data)).setMimeType(
+    ContentService.MimeType.JSON
+  );
 }
 
 // Fungsi test untuk memastikan script berfungsi
 function testFunction() {
   try {
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-    console.log("Spreadsheet Name:", SpreadsheetApp.getActiveSpreadsheet().getName());
+    console.log(
+      "Spreadsheet Name:",
+      SpreadsheetApp.getActiveSpreadsheet().getName()
+    );
     console.log("Sheet Name:", sheet.getName());
     console.log("Last Row:", sheet.getLastRow());
-    
+
     // Test tambah data
-    const testRow = ['TEST', new Date(), 'Test User', '081234567890', 'Test School', 'Test Position', 'jempol', 'positif', 'Test', '2025-01-01'];
+    const testRow = [
+      "TEST",
+      new Date(),
+      "Test User",
+      "081234567890",
+      "Test School",
+      "Test Position",
+      "jempol",
+      "positif",
+      "Test",
+      "2025-01-01",
+    ];
     sheet.appendRow(testRow);
     console.log("Test data added successfully");
-    
+
     return "Test berhasil!";
   } catch (error) {
     console.error("Error in test:", error);
     return "Test error: " + error.toString();
+  }
+}
+
+// Fungsi untuk handle form submission dengan logging yang detail
+function debugFormData(e) {
+  try {
+    console.log("=== DEBUG FORM DATA ===");
+    console.log("e.postData:", JSON.stringify(e.postData, null, 2));
+    console.log("e.parameter:", JSON.stringify(e.parameter, null, 2));
+
+    if (e.postData && e.postData.contents) {
+      console.log("Raw contents:", e.postData.contents);
+
+      // Coba parse form data jika ini adalah form-encoded
+      if (e.postData.type === "application/x-www-form-urlencoded") {
+        const params = new URLSearchParams(e.postData.contents);
+        console.log("Parsed form params:");
+        for (const [key, value] of params.entries()) {
+          console.log(`  ${key}: ${value}`);
+        }
+
+        const dataParam = params.get("data");
+        if (dataParam) {
+          console.log("Data parameter found:", dataParam);
+          try {
+            const parsedData = JSON.parse(dataParam);
+            console.log("Successfully parsed data:", parsedData);
+            return parsedData;
+          } catch (parseError) {
+            console.error("Failed to parse data parameter:", parseError);
+          }
+        }
+      }
+    }
+
+    return null;
+  } catch (error) {
+    console.error("Error in debugFormData:", error);
+    return null;
   }
 }
