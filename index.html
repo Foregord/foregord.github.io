@@ -292,6 +292,13 @@
               Test Connection
             </button>
             <button
+              onclick="diagnoseConnection()"
+              class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg font-semibold hover:shadow-lg transform hover:-translate-y-1 transition-all duration-200 flex items-center justify-center gap-2 text-sm"
+            >
+              <span>🩺</span>
+              Diagnose
+            </button>
+            <button
               onclick="syncWithGoogleSheets()"
               class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:shadow-lg transform hover:-translate-y-1 transition-all duration-200 flex items-center justify-center gap-2 text-sm"
             >
@@ -338,7 +345,7 @@
     <script>
       // GANTI URL INI DENGAN URL APPS SCRIPT ANDA YANG BARU
       const APPS_SCRIPT_URL =
-        "https://script.google.com/macros/s/AKfycbzQKz4lO1UrkQ-viUx9Ua_sA8vmF6O5ky7iqfBlFRYJ0gxpXHtbYD7CjmzGdUzmEB4DeA/exec";
+        "https://script.google.com/macros/s/AKfycbxP7xb-hv7KJ6MHwl9d7_kKPxGdVn_etNL4VltoP3YrKJoTFZUp_pNK_izwg_ij2WiKCQ/exec";
 
       // Data storage (hybrid: localStorage + Google Sheets)
       let dataStore = JSON.parse(localStorage.getItem("userData") || "[]");
@@ -576,36 +583,225 @@
 
       // Update Google Apps Script method
       async function syncWithGoogleSheets() {
+        console.log("Starting sync with Google Sheets...");
         showLoading(true);
+
         try {
-          // Gunakan JSONP untuk menghindari CORS
-          const response = await fetch(APPS_SCRIPT_URL, {
+          // Coba GET request dengan proper error handling
+          console.log("Fetching data from:", APPS_SCRIPT_URL);
+
+          const response = await fetch(APPS_SCRIPT_URL + "?action=getData", {
+            method: "GET",
+            mode: "cors",
+            cache: "no-cache",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+
+          console.log("Response status:", response.status);
+          console.log("Response ok:", response.ok);
+
+          if (response.ok) {
+            const result = await response.json();
+            console.log("Response data:", result);
+
+            if (result.success) {
+              // Sync data dari Google Sheets ke localStorage
+              const sheetData = result.data || [];
+              console.log("Data dari Google Sheets:", sheetData);
+
+              // Merge dengan data lokal (hindari duplikasi)
+              const mergedData = [...dataStore];
+
+              sheetData.forEach((sheetItem) => {
+                const existsInLocal = mergedData.some(
+                  (localItem) =>
+                    localItem.id === sheetItem.id ||
+                    (localItem.nama === sheetItem.nama &&
+                      localItem.nohp === sheetItem.nohp &&
+                      localItem.timestamp === sheetItem.timestamp)
+                );
+
+                if (!existsInLocal) {
+                  mergedData.push(sheetItem);
+                }
+              });
+
+              dataStore = mergedData;
+              localStorage.setItem("userData", JSON.stringify(dataStore));
+              updateDataDisplay();
+
+              console.log("Sync berhasil, total data:", dataStore.length);
+              alert(`✅ Sync berhasil! Total data: ${dataStore.length}`);
+            } else {
+              console.error("Sync gagal:", result.message);
+              alert("❌ Gagal sync: " + (result.message || "Unknown error"));
+            }
+          } else {
+            console.error("HTTP Error:", response.status, response.statusText);
+
+            if (response.status === 403) {
+              alert(
+                "❌ Error 403: Permission denied. Pastikan Apps Script di-deploy dengan 'Execute as: Me' dan 'Who has access: Anyone'"
+              );
+            } else if (response.status === 404) {
+              alert(
+                "❌ Error 404: Apps Script tidak ditemukan. Pastikan URL sudah benar."
+              );
+            } else {
+              alert(`❌ Error ${response.status}: ${response.statusText}`);
+            }
+          }
+        } catch (error) {
+          console.error("Error during sync:", error);
+
+          if (error.name === "TypeError" && error.message.includes("fetch")) {
+            alert(
+              "❌ Gagal terhubung ke Google Sheets. Pastikan koneksi internet stabil dan URL Apps Script benar."
+            );
+          } else {
+            alert("❌ Gagal melakukan sync: " + error.message);
+          }
+        } finally {
+          showLoading(false);
+        }
+      }
+
+      // Fungsi untuk diagnosis komprehensif koneksi
+      async function diagnoseConnection() {
+        console.log("=== COMPREHENSIVE CONNECTION DIAGNOSIS ===");
+
+        const results = {
+          url: APPS_SCRIPT_URL,
+          tests: [],
+        };
+
+        // Test 1: URL validity
+        console.log("1. Testing URL validity...");
+        if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes("YOUR_SCRIPT_ID")) {
+          results.tests.push({
+            name: "URL Validity",
+            status: "FAIL",
+            message: "URL Apps Script belum diset dengan benar",
+          });
+        } else {
+          results.tests.push({
+            name: "URL Validity",
+            status: "PASS",
+            message: "URL format valid",
+          });
+        }
+
+        // Test 2: GET request (sync)
+        console.log("2. Testing GET request...");
+        try {
+          const getResponse = await fetch(APPS_SCRIPT_URL, {
             method: "GET",
             mode: "cors",
           });
 
-          if (response.ok) {
-            const result = await response.json();
-            if (result.success) {
-              // Sync data dari Google Sheets ke localStorage
-              dataStore = result.data || [];
-              localStorage.setItem("userData", JSON.stringify(dataStore));
-              updateDataDisplay();
-              alert("Sync berhasil!");
-            } else {
-              alert("Gagal sync: " + result.message);
-            }
+          if (getResponse.ok) {
+            const getData = await getResponse.json();
+            results.tests.push({
+              name: "GET Request",
+              status: "PASS",
+              message: `Success: ${
+                getData.success ? "true" : "false"
+              }, Data count: ${getData.data ? getData.data.length : 0}`,
+            });
           } else {
-            alert("Gagal terhubung ke Google Sheets");
+            results.tests.push({
+              name: "GET Request",
+              status: "FAIL",
+              message: `HTTP ${getResponse.status}: ${getResponse.statusText}`,
+            });
           }
         } catch (error) {
-          console.error("Error syncing:", error);
-          alert(
-            "Gagal melakukan sync dengan Google Sheets. Menggunakan data lokal."
-          );
-        } finally {
-          showLoading(false);
+          results.tests.push({
+            name: "GET Request",
+            status: "FAIL",
+            message: `Error: ${error.message}`,
+          });
         }
+
+        // Test 3: POST request (form submission)
+        console.log("3. Testing POST request...");
+        try {
+          const testData = {
+            id: "DIAGNOSTIC-" + Date.now(),
+            timestamp: new Date().toLocaleString("id-ID"),
+            nama: "DIAGNOSTIC TEST",
+            nohp: "0812345678",
+            sekolah: "DIAGNOSTIC SCHOOL",
+            jabatan: "DIAGNOSTIC",
+            tipejari: "jempol",
+            indikasi: "positif",
+            keterangan: "Diagnostic test",
+            followup: "2025-01-01",
+          };
+
+          await saveToGoogleSheets(testData);
+          results.tests.push({
+            name: "POST Request",
+            status: "PASS",
+            message: "Form submission successful",
+          });
+        } catch (error) {
+          results.tests.push({
+            name: "POST Request",
+            status: "FAIL",
+            message: `Error: ${error.message}`,
+          });
+        }
+
+        // Test 4: Network connectivity
+        console.log("4. Testing network connectivity...");
+        try {
+          const pingResponse = await fetch("https://www.google.com", {
+            method: "HEAD",
+            mode: "no-cors",
+          });
+          results.tests.push({
+            name: "Network Connectivity",
+            status: "PASS",
+            message: "Internet connection available",
+          });
+        } catch (error) {
+          results.tests.push({
+            name: "Network Connectivity",
+            status: "FAIL",
+            message: "Internet connection issue",
+          });
+        }
+
+        // Display results
+        console.log("=== DIAGNOSIS RESULTS ===", results);
+
+        let message = "🩺 **DIAGNOSIS RESULTS**\n\n";
+        message += `📍 **URL**: ${results.url}\n\n`;
+
+        results.tests.forEach((test) => {
+          const icon = test.status === "PASS" ? "✅" : "❌";
+          message += `${icon} **${test.name}**: ${test.message}\n`;
+        });
+
+        const passCount = results.tests.filter(
+          (t) => t.status === "PASS"
+        ).length;
+        const totalCount = results.tests.length;
+
+        message += `\n📊 **Summary**: ${passCount}/${totalCount} tests passed`;
+
+        if (passCount === totalCount) {
+          message +=
+            "\n\n🎉 **All tests passed!** Connection is working properly.";
+        } else {
+          message +=
+            "\n\n⚠️ **Some tests failed.** Please check the TROUBLESHOOTING.md file.";
+        }
+
+        alert(message);
       }
 
       function clearForm() {
