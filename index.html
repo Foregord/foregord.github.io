@@ -167,13 +167,21 @@
                 required
                 class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200"
               >
-                <option value="">Pilih tipe jari</option>
-                <option value="jempol">Jempol</option>
-                <option value="telunjuk">Telunjuk</option>
-                <option value="tengah">Tengah</option>
-                <option value="manis">Manis</option>
-                <option value="kelingking">Kelingking</option>
-                <option value="Belum di tes">Belum di tes</option>
+                <option value="" disabled selected hidden>
+                  Pilih tipe jari
+                </option>
+                <option value="jempol" disabled selected hidden>Jempol</option>
+                <option value="telunjuk" disabled selected hidden>
+                  Telunjuk
+                </option>
+                <option value="tengah" disabled selected hidden>Tengah</option>
+                <option value="manis" disabled selected hidden>Manis</option>
+                <option value="kelingking" disabled selected hidden>
+                  Kelingking
+                </option>
+                <option value="Belum di tes" disabled selected hidden>
+                  Belum di tes
+                </option>
               </select>
             </div>
 
@@ -191,9 +199,15 @@
                 required
                 class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200"
               >
-                <option value="">Pilih indikasi</option>
-                <option value="positif">Positif</option>
-                <option value="negatif">Negatif</option>
+                <option value="" disabled selected hidden>
+                  Pilih indikasi
+                </option>
+                <option value="positif" disabled selected hidden>
+                  Positif
+                </option>
+                <option value="negatif" disabled selected hidden>
+                  Negatif
+                </option>
               </select>
             </div>
 
@@ -210,12 +224,24 @@
                 name="keterangan"
                 class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200"
               >
-                <option value="">Pilih keterangan</option>
-                <option value="Seminar Parenting">Seminar Parenting</option>
-                <option value="Seminar Guru-Guru">Seminar Guru-Guru</option>
-                <option value="Workshop">Workshop</option>
-                <option value="Sosialisasi">Sosialisasi</option>
-                <option value="Pengetesan">Pengetesan</option>
+                <option value="" disabled selected hidden>
+                  Pilih keterangan
+                </option>
+                <option value="Seminar Parenting" disabled selected hidden>
+                  Seminar Parenting
+                </option>
+                <option value="Seminar Guru-Guru" disabled selected hidden>
+                  Seminar Guru-Guru
+                </option>
+                <option value="Workshop" disabled selected hidden>
+                  Workshop
+                </option>
+                <option value="Sosialisasi" disabled selected hidden>
+                  Sosialisasi
+                </option>
+                <option value="Pengetesan" disabled selected hidden>
+                  Pengetesan
+                </option>
               </select>
             </div>
 
@@ -285,27 +311,6 @@
           <!-- Action Buttons -->
           <div class="flex flex-col sm:flex-row gap-3 mb-6">
             <button
-              onclick="testGoogleSheets()"
-              class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-semibold hover:shadow-lg transform hover:-translate-y-1 transition-all duration-200 flex items-center justify-center gap-2 text-sm"
-            >
-              <span>🔧</span>
-              Test Connection
-            </button>
-            <button
-              onclick="diagnoseConnection()"
-              class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg font-semibold hover:shadow-lg transform hover:-translate-y-1 transition-all duration-200 flex items-center justify-center gap-2 text-sm"
-            >
-              <span>🩺</span>
-              Diagnose
-            </button>
-            <button
-              onclick="syncWithGoogleSheets()"
-              class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:shadow-lg transform hover:-translate-y-1 transition-all duration-200 flex items-center justify-center gap-2 text-sm"
-            >
-              <span>🔄</span>
-              Sync Google Sheets
-            </button>
-            <button
               onclick="exportData()"
               class="gradient-primary text-white px-4 py-2 rounded-lg font-semibold hover:shadow-lg transform hover:-translate-y-1 transition-all duration-200 flex items-center justify-center gap-2 text-sm"
             >
@@ -344,7 +349,7 @@
 
     <script>
       const APPS_SCRIPT_URL =
-        "https://script.google.com/macros/s/AKfycbxP7xb-hv7KJ6MHwl9d7_kKPxGdVn_etNL4VltoP3YrKJoTFZUp_pNK_izwg_ij2WiKCQ/exec";
+        "https://script.google.com/macros/s/AKfycbz6A6-HfkCFlNCKbU2sJaUWVzOoL-emKKsgfUb6191ZPMsmEoyTfmoel7FsJ9zWqu1-bw/exec";
 
       let dataStore = [];
 
@@ -379,6 +384,7 @@
             !data.tipejari ||
             !data.indikasi
           ) {
+            console.warn("Validasi gagal", data);
             showMessage("errorMessage");
             return;
           }
