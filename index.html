@@ -343,62 +343,22 @@
     </div>
 
     <script>
-      // GANTI URL INI DENGAN URL APPS SCRIPT ANDA YANG BARU
       const APPS_SCRIPT_URL =
         "https://script.google.com/macros/s/AKfycbxP7xb-hv7KJ6MHwl9d7_kKPxGdVn_etNL4VltoP3YrKJoTFZUp_pNK_izwg_ij2WiKCQ/exec";
 
-      // Data storage (hybrid: localStorage + Google Sheets)
-      let dataStore = JSON.parse(localStorage.getItem("userData") || "[]");
-      let isOnline = navigator.onLine;
+      let dataStore = [];
 
-      // Fungsi untuk menampilkan pesan
-      function showMessage(messageId) {
-        const message = document.getElementById(messageId);
-        if (message) {
-          message.classList.remove("hidden");
-          setTimeout(() => {
-            message.classList.add("hidden");
-          }, 3000);
-        }
-      }
-
-      // Fungsi untuk menampilkan loading
-      function showLoading(show) {
-        const loadingMessage = document.getElementById("loadingMessage");
-        if (loadingMessage) {
-          if (show) {
-            loadingMessage.classList.remove("hidden");
-          } else {
-            loadingMessage.classList.add("hidden");
-          }
-        }
-      }
-
-      // Fungsi untuk mengupdate statistik
-      function updateStats() {
-        const totalData = dataStore.length;
-        const totalPositif = dataStore.filter(
-          (item) => item.indikasi === "positif"
-        ).length;
-        const totalNegatif = dataStore.filter(
-          (item) => item.indikasi === "negatif"
-        ).length;
-
-        const totalDataElement = document.getElementById("totalData");
-        const totalPositifElement = document.getElementById("totalPositif");
-        const totalNegatifElement = document.getElementById("totalNegatif");
-
-        if (totalDataElement) totalDataElement.textContent = totalData;
-        if (totalPositifElement) totalPositifElement.textContent = totalPositif;
-        if (totalNegatifElement) totalNegatifElement.textContent = totalNegatif;
-      }
+      document.addEventListener("DOMContentLoaded", async () => {
+        await syncDataFromSheets();
+        updateDataDisplay();
+      });
 
       document
         .getElementById("dataForm")
-        .addEventListener("submit", async function (e) {
+        .addEventListener("submit", async (e) => {
           e.preventDefault();
-
           const formData = new FormData(e.target);
+
           const data = {
             id: Date.now(),
             timestamp: new Date().toLocaleString("id-ID"),
@@ -412,7 +372,6 @@
             followup: formData.get("followup"),
           };
 
-          // Validasi - field wajib
           if (
             !data.nama ||
             !data.nohp ||
@@ -424,608 +383,129 @@
             return;
           }
 
-          // Tampilkan loading
-          showLoading(true);
+          showMessage("loadingMessage");
 
           try {
-            // Gunakan workaround untuk CORS dengan dynamic script
             await saveToGoogleSheets(data);
-            console.log("Data berhasil dikirim ke Google Sheets");
-          } catch (error) {
-            console.error("Error saving to Google Sheets:", error);
+            dataStore.push(data);
+            e.target.reset();
+            updateDataDisplay();
+            showMessage("successMessage");
+          } catch (err) {
+            console.error(err);
+            showMessage("errorMessage");
           }
-
-          // Simpan ke localStorage (selalu berhasil)
-          dataStore.push(data);
-          localStorage.setItem("userData", JSON.stringify(dataStore));
-
-          // Reset form dan update display
-          e.target.reset();
-          showMessage("successMessage");
-          updateDataDisplay();
-          showLoading(false);
         });
 
-      // Fungsi workaround untuk CORS dengan dynamic script
-      function saveToGoogleSheets(data) {
-        return new Promise((resolve, reject) => {
-          console.log("Mengirim data ke Google Sheets:", data);
-
-          // Buat form tersembunyi untuk submit dengan encoding yang benar
-          const form = document.createElement("form");
-          form.method = "POST";
-          form.action = APPS_SCRIPT_URL;
-          form.target = "hidden_iframe_" + Date.now(); // unique target
-          form.style.display = "none";
-          form.enctype = "application/x-www-form-urlencoded";
-
-          // Tambahkan data sebagai hidden input dengan proper encoding
-          const input = document.createElement("input");
-          input.type = "hidden";
-          input.name = "data";
-          input.value = JSON.stringify(data); // Biarkan browser yang handle encoding
-          form.appendChild(input);
-
-          console.log("Form data yang dikirim:", JSON.stringify(data));
-
-          // Buat iframe tersembunyi dengan nama yang unik
-          const iframe = document.createElement("iframe");
-          iframe.name = form.target;
-          iframe.style.display = "none";
-          iframe.style.width = "0";
-          iframe.style.height = "0";
-
-          let resolved = false;
-
-          iframe.onload = function () {
-            if (!resolved) {
-              resolved = true;
-              console.log("Form berhasil disubmit ke Google Sheets");
-
-              // Cleanup dengan delay
-              setTimeout(() => {
-                try {
-                  if (document.body.contains(form))
-                    document.body.removeChild(form);
-                  if (document.body.contains(iframe))
-                    document.body.removeChild(iframe);
-                } catch (cleanupError) {
-                  console.warn("Error during cleanup:", cleanupError);
-                }
-                resolve();
-              }, 2000);
-            }
-          };
-
-          iframe.onerror = function () {
-            if (!resolved) {
-              resolved = true;
-              console.error("Error submitting form to Google Sheets");
-
-              try {
-                if (document.body.contains(form))
-                  document.body.removeChild(form);
-                if (document.body.contains(iframe))
-                  document.body.removeChild(iframe);
-              } catch (cleanupError) {
-                console.warn("Error during cleanup:", cleanupError);
-              }
-              reject(new Error("Failed to submit to Google Sheets"));
-            }
-          };
-
-          // Tambahkan ke DOM dan submit
-          document.body.appendChild(iframe);
-          document.body.appendChild(form);
-
-          console.log("Submitting form ke:", APPS_SCRIPT_URL);
-          form.submit();
-
-          // Fallback timeout - lebih lama untuk memastikan
-          setTimeout(() => {
-            if (!resolved) {
-              resolved = true;
-              console.log("Form submit timeout - assuming success");
-
-              try {
-                if (document.body.contains(form))
-                  document.body.removeChild(form);
-                if (document.body.contains(iframe))
-                  document.body.removeChild(iframe);
-              } catch (cleanupError) {
-                console.warn("Error during cleanup:", cleanupError);
-              }
-              resolve();
-            }
-          }, 8000); // 8 detik timeout
+      async function saveToGoogleSheets(data) {
+        const response = await fetch(APPS_SCRIPT_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: "data=" + encodeURIComponent(JSON.stringify(data)),
         });
+
+        const result = await response.json();
+        if (!result.success) {
+          throw new Error(result.message || "Gagal menyimpan ke Google Sheets");
+        }
       }
 
-      // Fungsi test untuk debugging Google Sheets
-      async function testGoogleSheets() {
-        console.log("Testing Google Sheets connection...");
-        console.log("URL:", APPS_SCRIPT_URL);
+      async function syncDataFromSheets() {
+        try {
+          const response = await fetch(APPS_SCRIPT_URL);
+          const result = await response.json();
+          if (result.success) {
+            dataStore = result.data || [];
+          }
+        } catch (err) {
+          console.warn("Gagal mengambil data dari Google Sheets:", err);
+        }
+      }
 
-        if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes("YOUR_SCRIPT_ID")) {
-          alert("Error: URL Google Apps Script belum diset dengan benar!");
+      function updateDataDisplay() {
+        const table = document.getElementById("dataDisplay");
+        if (dataStore.length === 0) {
+          table.innerHTML = `<div class="text-gray-500 text-center py-4 italic">Belum ada data tersimpan</div>`;
+          updateStats();
           return;
         }
 
-        try {
-          // Test dengan data dummy
-          const testData = {
-            id: Date.now(),
-            timestamp: new Date().toLocaleString("id-ID"),
-            nama: "TEST USER",
-            nohp: "081234567890",
-            sekolah: "TEST SCHOOL",
-            jabatan: "TEST",
-            tipejari: "jempol",
-            indikasi: "positif",
-            keterangan: "Test connection",
-            followup: "2025-01-01",
-          };
-
-          console.log("Mengirim test data:", testData);
-
-          // Gunakan cara yang sama seperti form submission
-          await saveToGoogleSheets(testData);
-
-          console.log("Test berhasil!");
-          alert(
-            "✅ Test connection berhasil! Cek Google Sheets untuk melihat data test."
-          );
-        } catch (error) {
-          console.error("Test gagal:", error);
-          alert("❌ Test connection gagal: " + error.message);
-        }
-      }
-
-      // Update Google Apps Script method
-      async function syncWithGoogleSheets() {
-        console.log("Starting sync with Google Sheets...");
-        showLoading(true);
-
-        try {
-          // Coba GET request dengan proper error handling
-          console.log("Fetching data from:", APPS_SCRIPT_URL);
-
-          const response = await fetch(APPS_SCRIPT_URL + "?action=getData", {
-            method: "GET",
-            mode: "cors",
-            cache: "no-cache",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          });
-
-          console.log("Response status:", response.status);
-          console.log("Response ok:", response.ok);
-
-          if (response.ok) {
-            const result = await response.json();
-            console.log("Response data:", result);
-
-            if (result.success) {
-              // Sync data dari Google Sheets ke localStorage
-              const sheetData = result.data || [];
-              console.log("Data dari Google Sheets:", sheetData);
-
-              // Merge dengan data lokal (hindari duplikasi)
-              const mergedData = [...dataStore];
-
-              sheetData.forEach((sheetItem) => {
-                const existsInLocal = mergedData.some(
-                  (localItem) =>
-                    localItem.id === sheetItem.id ||
-                    (localItem.nama === sheetItem.nama &&
-                      localItem.nohp === sheetItem.nohp &&
-                      localItem.timestamp === sheetItem.timestamp)
-                );
-
-                if (!existsInLocal) {
-                  mergedData.push(sheetItem);
-                }
-              });
-
-              dataStore = mergedData;
-              localStorage.setItem("userData", JSON.stringify(dataStore));
-              updateDataDisplay();
-
-              console.log("Sync berhasil, total data:", dataStore.length);
-              alert(`✅ Sync berhasil! Total data: ${dataStore.length}`);
-            } else {
-              console.error("Sync gagal:", result.message);
-              alert("❌ Gagal sync: " + (result.message || "Unknown error"));
-            }
-          } else {
-            console.error("HTTP Error:", response.status, response.statusText);
-
-            if (response.status === 403) {
-              alert(
-                "❌ Error 403: Permission denied. Pastikan Apps Script di-deploy dengan 'Execute as: Me' dan 'Who has access: Anyone'"
-              );
-            } else if (response.status === 404) {
-              alert(
-                "❌ Error 404: Apps Script tidak ditemukan. Pastikan URL sudah benar."
-              );
-            } else {
-              alert(`❌ Error ${response.status}: ${response.statusText}`);
-            }
-          }
-        } catch (error) {
-          console.error("Error during sync:", error);
-
-          if (error.name === "TypeError" && error.message.includes("fetch")) {
-            alert(
-              "❌ Gagal terhubung ke Google Sheets. Pastikan koneksi internet stabil dan URL Apps Script benar."
-            );
-          } else {
-            alert("❌ Gagal melakukan sync: " + error.message);
-          }
-        } finally {
-          showLoading(false);
-        }
-      }
-
-      // Fungsi untuk diagnosis komprehensif koneksi
-      async function diagnoseConnection() {
-        console.log("=== COMPREHENSIVE CONNECTION DIAGNOSIS ===");
-
-        const results = {
-          url: APPS_SCRIPT_URL,
-          tests: [],
-        };
-
-        // Test 1: URL validity
-        console.log("1. Testing URL validity...");
-        if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes("YOUR_SCRIPT_ID")) {
-          results.tests.push({
-            name: "URL Validity",
-            status: "FAIL",
-            message: "URL Apps Script belum diset dengan benar",
-          });
-        } else {
-          results.tests.push({
-            name: "URL Validity",
-            status: "PASS",
-            message: "URL format valid",
-          });
-        }
-
-        // Test 2: GET request (sync)
-        console.log("2. Testing GET request...");
-        try {
-          const getResponse = await fetch(APPS_SCRIPT_URL, {
-            method: "GET",
-            mode: "cors",
-          });
-
-          if (getResponse.ok) {
-            const getData = await getResponse.json();
-            results.tests.push({
-              name: "GET Request",
-              status: "PASS",
-              message: `Success: ${
-                getData.success ? "true" : "false"
-              }, Data count: ${getData.data ? getData.data.length : 0}`,
-            });
-          } else {
-            results.tests.push({
-              name: "GET Request",
-              status: "FAIL",
-              message: `HTTP ${getResponse.status}: ${getResponse.statusText}`,
-            });
-          }
-        } catch (error) {
-          results.tests.push({
-            name: "GET Request",
-            status: "FAIL",
-            message: `Error: ${error.message}`,
-          });
-        }
-
-        // Test 3: POST request (form submission)
-        console.log("3. Testing POST request...");
-        try {
-          const testData = {
-            id: "DIAGNOSTIC-" + Date.now(),
-            timestamp: new Date().toLocaleString("id-ID"),
-            nama: "DIAGNOSTIC TEST",
-            nohp: "0812345678",
-            sekolah: "DIAGNOSTIC SCHOOL",
-            jabatan: "DIAGNOSTIC",
-            tipejari: "jempol",
-            indikasi: "positif",
-            keterangan: "Diagnostic test",
-            followup: "2025-01-01",
-          };
-
-          await saveToGoogleSheets(testData);
-          results.tests.push({
-            name: "POST Request",
-            status: "PASS",
-            message: "Form submission successful",
-          });
-        } catch (error) {
-          results.tests.push({
-            name: "POST Request",
-            status: "FAIL",
-            message: `Error: ${error.message}`,
-          });
-        }
-
-        // Test 4: Network connectivity
-        console.log("4. Testing network connectivity...");
-        try {
-          const pingResponse = await fetch("https://www.google.com", {
-            method: "HEAD",
-            mode: "no-cors",
-          });
-          results.tests.push({
-            name: "Network Connectivity",
-            status: "PASS",
-            message: "Internet connection available",
-          });
-        } catch (error) {
-          results.tests.push({
-            name: "Network Connectivity",
-            status: "FAIL",
-            message: "Internet connection issue",
-          });
-        }
-
-        // Display results
-        console.log("=== DIAGNOSIS RESULTS ===", results);
-
-        let message = "🩺 **DIAGNOSIS RESULTS**\n\n";
-        message += `📍 **URL**: ${results.url}\n\n`;
-
-        results.tests.forEach((test) => {
-          const icon = test.status === "PASS" ? "✅" : "❌";
-          message += `${icon} **${test.name}**: ${test.message}\n`;
+        const rows = dataStore.map((d) => {
+          const indikasiColor =
+            d.indikasi === "positif"
+              ? "bg-red-100 text-red-800"
+              : "bg-green-100 text-green-800";
+          return `
+            <tr class="hover:bg-gray-50 transition">
+              <td class="px-4 py-2 text-sm">${d.timestamp}</td>
+              <td class="px-4 py-2 text-sm">${d.nama}</td>
+              <td class="px-4 py-2 text-sm">${d.nohp}</td>
+              <td class="px-4 py-2 text-sm">${d.sekolah}</td>
+              <td class="px-4 py-2 text-sm">${d.jabatan || "-"}</td>
+              <td class="px-4 py-2 text-sm">${d.tipejari}</td>
+              <td class="px-4 py-2">
+                <span class="inline-block px-2 py-1 text-xs rounded-full ${indikasiColor}">${
+            d.indikasi
+          }</span>
+              </td>
+            </tr>
+          `;
         });
 
-        const passCount = results.tests.filter(
-          (t) => t.status === "PASS"
+        table.innerHTML = `
+          <table class="min-w-full table-auto border-collapse rounded-lg overflow-hidden">
+            <thead class="bg-gray-200 text-gray-700">
+              <tr>
+                <th class="px-4 py-2 text-left">Waktu</th>
+                <th class="px-4 py-2 text-left">Nama</th>
+                <th class="px-4 py-2 text-left">No HP</th>
+                <th class="px-4 py-2 text-left">Sekolah</th>
+                <th class="px-4 py-2 text-left">Jabatan</th>
+                <th class="px-4 py-2 text-left">Tipe Jari</th>
+                <th class="px-4 py-2 text-left">Indikasi</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              ${rows.join("")}
+            </tbody>
+          </table>
+        `;
+
+        updateStats();
+      }
+
+      function updateStats() {
+        const totalData = dataStore.length;
+        const totalPositif = dataStore.filter(
+          (d) => d.indikasi === "positif"
         ).length;
-        const totalCount = results.tests.length;
+        const totalNegatif = dataStore.filter(
+          (d) => d.indikasi === "negatif"
+        ).length;
 
-        message += `\n📊 **Summary**: ${passCount}/${totalCount} tests passed`;
+        document.getElementById("totalData").textContent = totalData;
+        document.getElementById("totalPositif").textContent = totalPositif;
+        document.getElementById("totalNegatif").textContent = totalNegatif;
+      }
 
-        if (passCount === totalCount) {
-          message +=
-            "\n\n🎉 **All tests passed!** Connection is working properly.";
-        } else {
-          message +=
-            "\n\n⚠️ **Some tests failed.** Please check the TROUBLESHOOTING.md file.";
+      function showMessage(id) {
+        ["successMessage", "errorMessage", "loadingMessage"].forEach((el) => {
+          document.getElementById(el).classList.add("hidden");
+        });
+        const el = document.getElementById(id);
+        if (el) {
+          el.classList.remove("hidden");
+          if (id !== "loadingMessage") {
+            setTimeout(() => el.classList.add("hidden"), 3000);
+          }
         }
-
-        alert(message);
       }
 
       function clearForm() {
         document.getElementById("dataForm").reset();
       }
-
-      function updateDataDisplay() {
-        const display = document.getElementById("dataDisplay");
-
-        if (dataStore.length === 0) {
-          display.innerHTML =
-            '<div class="text-center text-gray-500 py-8 italic">Belum ada data yang tersimpan</div>';
-          updateStats();
-          return;
-        }
-
-        let html = '<div class="overflow-x-auto">';
-        html +=
-          '<table class="min-w-full bg-white rounded-lg overflow-hidden shadow-lg">';
-        html += '<thead class="gradient-bg text-white">';
-        html += "<tr>";
-        html +=
-          '<th class="px-4 py-3 text-left text-sm font-semibold">Timestamp</th>';
-        html +=
-          '<th class="px-4 py-3 text-left text-sm font-semibold">Nama</th>';
-        html +=
-          '<th class="px-4 py-3 text-left text-sm font-semibold hidden sm:table-cell">No. HP</th>';
-        html +=
-          '<th class="px-4 py-3 text-left text-sm font-semibold hidden md:table-cell">Sekolah</th>';
-        html +=
-          '<th class="px-4 py-3 text-left text-sm font-semibold hidden lg:table-cell">Jabatan</th>';
-        html +=
-          '<th class="px-4 py-3 text-left text-sm font-semibold">Tipe Jari</th>';
-        html +=
-          '<th class="px-4 py-3 text-left text-sm font-semibold">Indikasi</th>';
-        html +=
-          '<th class="px-4 py-3 text-center text-sm font-semibold">Aksi</th>';
-        html += "</tr>";
-        html += "</thead>";
-        html += '<tbody class="divide-y divide-gray-200">';
-
-        dataStore.forEach((item) => {
-          const indikasiColor =
-            item.indikasi === "positif"
-              ? "bg-red-100 text-red-800"
-              : "bg-green-100 text-green-800";
-          html += `<tr class="hover:bg-gray-50 transition-colors duration-200">
-                  <td class="px-4 py-3 text-sm text-gray-600">${
-                    item.timestamp
-                  }</td>
-                  <td class="px-4 py-3 text-sm font-medium text-gray-900">${
-                    item.nama
-                  }</td>
-                  <td class="px-4 py-3 text-sm text-gray-600 hidden sm:table-cell">${
-                    item.nohp
-                  }</td>
-                  <td class="px-4 py-3 text-sm text-gray-600 hidden md:table-cell">${
-                    item.sekolah
-                  }</td>
-                  <td class="px-4 py-3 text-sm text-gray-600 hidden lg:table-cell">${
-                    item.jabatan || "N/A"
-                  }</td>
-                  <td class="px-4 py-3 text-sm text-gray-600">${
-                    item.tipejari
-                  }</td>
-                  <td class="px-4 py-3">
-                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${indikasiColor}">
-                          ${item.indikasi}
-                      </span>
-                  </td>
-                  <td class="px-4 py-3 text-center">
-                      <div class="flex justify-center space-x-2">
-                          <button onclick="viewDetails(${
-                            item.id
-                          })" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs font-medium transition-colors duration-200">
-                              👁️
-                          </button>
-                          <button onclick="deleteData(${
-                            item.id
-                          })" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs font-medium transition-colors duration-200">
-                              🗑️
-                          </button>
-                      </div>
-                  </td>
-              </tr>`;
-        });
-
-        html += "</tbody></table></div>";
-        display.innerHTML = html;
-        updateStats();
-      }
-
-      function viewDetails(id) {
-        const item = dataStore.find((data) => data.id === id);
-        if (item) {
-          const modal = document.createElement("div");
-          modal.className =
-            "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50";
-          modal.innerHTML = `
-                  <div class="bg-white rounded-lg p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
-                      <h3 class="text-lg font-bold mb-4 text-gray-800">Detail Data</h3>
-                      <div class="space-y-3">
-                          <div><strong>Nama:</strong> ${item.nama}</div>
-                          <div><strong>No. HP:</strong> ${item.nohp}</div>
-                          <div><strong>Sekolah:</strong> ${item.sekolah}</div>
-                          <div><strong>Jabatan:</strong> ${
-                            item.jabatan || "Tidak ada"
-                          }</div>
-                          <div><strong>Tipe Jari:</strong> ${
-                            item.tipejari
-                          }</div>
-                          <div><strong>Indikasi:</strong> 
-                              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                item.indikasi === "positif"
-                                  ? "bg-red-100 text-red-800"
-                                  : "bg-green-100 text-green-800"
-                              }">
-                                  ${item.indikasi}
-                              </span>
-                          </div>
-                          <div><strong>Keterangan:</strong> ${
-                            item.keterangan || "Tidak ada"
-                          }</div>
-                          <div><strong>Follow Up Date:</strong> ${
-                            item.followup || "Tidak ada"
-                          }</div>
-                          <div><strong>Timestamp:</strong> ${
-                            item.timestamp
-                          }</div>
-                      </div>
-                      <button onclick="this.parentElement.parentElement.remove()" class="mt-4 w-full bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-semibold transition-colors duration-200">
-                          Tutup
-                      </button>
-                  </div>
-              `;
-          document.body.appendChild(modal);
-
-          // Close modal when clicking outside
-          modal.addEventListener("click", function (e) {
-            if (e.target === modal) {
-              modal.remove();
-            }
-          });
-        }
-      }
-
-      function deleteData(id) {
-        if (confirm("Apakah Anda yakin ingin menghapus data ini?")) {
-          dataStore = dataStore.filter((item) => item.id !== id);
-          localStorage.setItem("userData", JSON.stringify(dataStore));
-          updateDataDisplay();
-        }
-      }
-
-      function clearAllData() {
-        if (
-          confirm(
-            "Apakah Anda yakin ingin menghapus SEMUA data? Tindakan ini tidak dapat dibatalkan!"
-          )
-        ) {
-          dataStore = [];
-          localStorage.setItem("userData", JSON.stringify(dataStore));
-          updateDataDisplay();
-        }
-      }
-
-      function exportData() {
-        if (dataStore.length === 0) {
-          alert("Tidak ada data untuk diekspor");
-          return;
-        }
-
-        const dataStr = JSON.stringify(dataStore, null, 2);
-        const dataBlob = new Blob([dataStr], { type: "application/json" });
-        const url = URL.createObjectURL(dataBlob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = `data_backup_${
-          new Date().toISOString().split("T")[0]
-        }.json`;
-        link.click();
-        URL.revokeObjectURL(url);
-      }
-
-      function importData() {
-        document.getElementById("fileInput").click();
-      }
-
-      function handleFileImport(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = function (e) {
-          try {
-            const importedData = JSON.parse(e.target.result);
-            if (Array.isArray(importedData)) {
-              if (
-                confirm(
-                  "Import data akan menggantikan data yang ada. Lanjutkan?"
-                )
-              ) {
-                dataStore = importedData;
-                localStorage.setItem("userData", JSON.stringify(dataStore));
-                updateDataDisplay();
-                alert("Data berhasil diimport!");
-              }
-            } else {
-              alert("Format file tidak valid");
-            }
-          } catch (error) {
-            alert("Error membaca file: " + error.message);
-          }
-        };
-        reader.readAsText(file);
-      }
-
-      // Initialize display when page loads
-      document.addEventListener("DOMContentLoaded", function () {
-        updateDataDisplay();
-      });
-
-      // Initialize display immediately
-      updateDataDisplay();
     </script>
   </body>
 </html>
