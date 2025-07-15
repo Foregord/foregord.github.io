@@ -32,9 +32,50 @@
         backdrop-filter: blur(10px);
         border: 1px solid rgba(255, 255, 255, 0.2);
       }
+
+      .sync-indicator {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1000;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+        color: white;
+        transition: all 0.3s ease;
+      }
+
+      .sync-indicator.syncing {
+        background: #3b82f6;
+        animation: pulse 2s infinite;
+      }
+
+      .sync-indicator.success {
+        background: #10b981;
+      }
+
+      .sync-indicator.error {
+        background: #ef4444;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.5;
+        }
+      }
     </style>
   </head>
   <body class="gradient-bg min-h-screen">
+    <!-- Sync Indicator -->
+    <div id="syncIndicator" class="sync-indicator hidden">
+      <span id="syncText">🔄 Syncing...</span>
+    </div>
+
     <div class="container mx-auto px-4 py-6 max-w-7xl">
       <!-- Header -->
       <div
@@ -48,6 +89,10 @@
         <h1 class="text-3xl md:text-4xl font-bold mb-2">
           Tesdia Data Manager Bandung
         </h1>
+        <div class="text-sm opacity-90">
+          <span id="connectionStatus">🔄 Loading...</span> | Last sync:
+          <span id="lastSyncTime">-</span>
+        </div>
       </div>
 
       <!-- Main Content -->
@@ -59,14 +104,14 @@
           >
             Input Data
           </h2>
-          <!-- Success Message -->
+
+          <!-- Messages -->
           <div
             id="successMessage"
             class="hidden bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg mb-4"
           >
             <span class="font-medium">✅ Data berhasil disimpan!</span>
           </div>
-          <!-- Error Message -->
           <div
             id="errorMessage"
             class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-4"
@@ -75,7 +120,6 @@
               >❌ Mohon lengkapi semua field yang diperlukan!</span
             >
           </div>
-          <!-- Loading Message -->
           <div
             id="loadingMessage"
             class="hidden bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded-lg mb-4"
@@ -283,30 +327,38 @@
           </div>
 
           <!-- Action Buttons -->
-          <div class="flex flex-col sm:flex-row gap-3 mb-6">
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
             <button
               onclick="exportData()"
               class="gradient-primary text-white px-4 py-2 rounded-lg font-semibold hover:shadow-lg transform hover:-translate-y-1 transition-all duration-200 flex items-center justify-center gap-2 text-sm"
             >
               <span>📤</span>
-              Export JSON
+              Export
             </button>
             <button
               onclick="importData()"
               class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-semibold hover:shadow-lg transform hover:-translate-y-1 transition-all duration-200 flex items-center justify-center gap-2 text-sm"
             >
               <span>📥</span>
-              Import JSON
+              Import
+            </button>
+            <button
+              onclick="forceSync()"
+              class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:shadow-lg transform hover:-translate-y-1 transition-all duration-200 flex items-center justify-center gap-2 text-sm"
+            >
+              <span>🔄</span>
+              Sync
             </button>
             <button
               onclick="clearAllData()"
               class="gradient-danger text-white px-4 py-2 rounded-lg font-semibold hover:shadow-lg transform hover:-translate-y-1 transition-all duration-200 flex items-center justify-center gap-2 text-sm"
             >
               <span>🗑️</span>
-              Hapus Semua
+              Hapus
             </button>
           </div>
 
+          <!-- Hidden file input -->
           <input
             type="file"
             id="fileInput"
@@ -323,15 +375,94 @@
 
     <script>
       const APPS_SCRIPT_URL =
-        "https://script.google.com/macros/s/AKfycbz6A6-HfkCFlNCKbU2sJaUWVzOoL-emKKsgfUb6191ZPMsmEoyTfmoel7FsJ9zWqu1-bw/exec";
+        "https://script.google.com/macros/s/AKfycbzrm1fCrjXOX2tlCNhyfMcYydFMey1XasSbyc0HmZysMOEpgP7Au7pv0J-KyQd9uN_nGQ/exec";
 
       let dataStore = [];
+      let isOnline = navigator.onLine;
+      let syncInterval;
+      let lastSyncTime = null;
 
+      // Auto sync setiap 30 detik
+      function startAutoSync() {
+        syncInterval = setInterval(async () => {
+          if (isOnline) {
+            await syncDataFromSheets(false); // false = silent sync
+          }
+        }, 30000); // 30 detik
+      }
+
+      // Stop auto sync
+      function stopAutoSync() {
+        if (syncInterval) {
+          clearInterval(syncInterval);
+        }
+      }
+
+      // Update sync indicator
+      function updateSyncIndicator(status, message) {
+        const indicator = document.getElementById("syncIndicator");
+        const text = document.getElementById("syncText");
+
+        if (indicator && text) {
+          indicator.className = "sync-indicator " + status;
+          text.textContent = message;
+
+          if (status === "syncing") {
+            indicator.classList.remove("hidden");
+          } else {
+            indicator.classList.remove("hidden");
+            setTimeout(() => {
+              indicator.classList.add("hidden");
+            }, 3000);
+          }
+        }
+      }
+
+      // Update connection status
+      function updateConnectionStatus(status) {
+        const statusElement = document.getElementById("connectionStatus");
+        const lastSyncElement = document.getElementById("lastSyncTime");
+
+        if (statusElement) statusElement.textContent = status;
+        if (lastSyncElement && lastSyncTime) {
+          lastSyncElement.textContent =
+            lastSyncTime.toLocaleTimeString("id-ID");
+        }
+      }
+
+      // Initialize app
       document.addEventListener("DOMContentLoaded", async () => {
-        await syncDataFromSheets();
-        updateDataDisplay();
+        // Load data from localStorage first
+        const savedData = localStorage.getItem("tesdiaData");
+        if (savedData) {
+          try {
+            dataStore = JSON.parse(savedData);
+            updateDataDisplay();
+          } catch (e) {
+            console.warn("Error parsing saved data:", e);
+          }
+        }
+
+        // Then sync with Google Sheets
+        await syncDataFromSheets(true);
+
+        // Start auto sync
+        startAutoSync();
       });
 
+      // Handle online/offline events
+      window.addEventListener("online", () => {
+        isOnline = true;
+        updateConnectionStatus("🟢 Online");
+        syncDataFromSheets(true);
+      });
+
+      window.addEventListener("offline", () => {
+        isOnline = false;
+        updateConnectionStatus("🔴 Offline");
+      });
+
+      // Form submission
       document
         .getElementById("dataForm")
         .addEventListener("submit", async (e) => {
@@ -351,6 +482,7 @@
             followup: formData.get("followup"),
           };
 
+          // Validation
           if (
             !data.nama ||
             !data.nohp ||
@@ -358,7 +490,6 @@
             !data.tipejari ||
             !data.indikasi
           ) {
-            console.warn("Validasi gagal", data);
             showMessage("errorMessage");
             return;
           }
@@ -366,17 +497,38 @@
           showMessage("loadingMessage");
 
           try {
-            await saveToGoogleSheets(data);
+            // Save to Google Sheets if online
+            if (isOnline) {
+              await saveToGoogleSheets(data);
+            }
+
+            // Save to local storage
             dataStore.push(data);
+            localStorage.setItem("tesdiaData", JSON.stringify(dataStore));
+
+            // Update UI
             e.target.reset();
             updateDataDisplay();
             showMessage("successMessage");
+
+            // Auto sync after save
+            if (isOnline) {
+              setTimeout(() => syncDataFromSheets(false), 2000);
+            }
           } catch (err) {
-            console.error(err);
-            showMessage("errorMessage");
+            console.error("Error saving data:", err);
+
+            // Still save locally even if Google Sheets fails
+            dataStore.push(data);
+            localStorage.setItem("tesdiaData", JSON.stringify(dataStore));
+
+            e.target.reset();
+            updateDataDisplay();
+            showMessage("successMessage");
           }
         });
 
+      // Save to Google Sheets
       async function saveToGoogleSheets(data) {
         const response = await fetch(APPS_SCRIPT_URL, {
           method: "POST",
@@ -392,70 +544,240 @@
         }
       }
 
-      async function syncDataFromSheets() {
+      // Sync data from Google Sheets
+      async function syncDataFromSheets(showIndicator = true) {
         try {
-          const response = await fetch(APPS_SCRIPT_URL);
-          const result = await response.json();
-          if (result.success) {
-            dataStore = result.data || [];
+          if (showIndicator) {
+            updateSyncIndicator("syncing", "🔄 Syncing with Google Sheets...");
+          }
+
+          const response = await fetch(APPS_SCRIPT_URL + "?action=get", {
+            method: "GET",
+          });
+
+          if (response.ok) {
+            const result = await response.json();
+            if (result.success && result.data) {
+              // Merge data from Google Sheets with local data
+              const sheetsData = result.data;
+              const localIds = dataStore.map((item) => item.id);
+
+              // Add new data from sheets that's not in local
+              sheetsData.forEach((item) => {
+                if (!localIds.includes(item.id)) {
+                  dataStore.push(item);
+                }
+              });
+
+              // Update local storage
+              localStorage.setItem("tesdiaData", JSON.stringify(dataStore));
+              updateDataDisplay();
+
+              lastSyncTime = new Date();
+              updateConnectionStatus("🟢 Online");
+
+              if (showIndicator) {
+                updateSyncIndicator("success", "✅ Sync successful");
+              }
+            }
+          } else {
+            throw new Error("Failed to fetch data");
           }
         } catch (err) {
-          console.warn("Gagal mengambil data dari Google Sheets:", err);
+          console.warn("Sync error:", err);
+          updateConnectionStatus("🟡 Sync Error");
+
+          if (showIndicator) {
+            updateSyncIndicator("error", "❌ Sync failed");
+          }
         }
       }
 
+      // Force sync
+      async function forceSync() {
+        await syncDataFromSheets(true);
+      }
+
+      // Export data
+      function exportData() {
+        if (dataStore.length === 0) {
+          alert("Tidak ada data untuk diekspor");
+          return;
+        }
+
+        const exportData = {
+          exported_at: new Date().toISOString(),
+          total_records: dataStore.length,
+          data: dataStore,
+        };
+
+        const dataStr = JSON.stringify(exportData, null, 2);
+        const dataBlob = new Blob([dataStr], { type: "application/json" });
+        const url = URL.createObjectURL(dataBlob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `tesdia_data_${
+          new Date().toISOString().split("T")[0]
+        }.json`;
+        link.click();
+        URL.revokeObjectURL(url);
+      }
+
+      // Import data
+      function importData() {
+        document.getElementById("fileInput").click();
+      }
+
+      // Handle file import
+      function handleFileImport(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          try {
+            const importedData = JSON.parse(e.target.result);
+            let newData = [];
+
+            // Check if it's the new export format
+            if (importedData.data && Array.isArray(importedData.data)) {
+              newData = importedData.data;
+            } else if (Array.isArray(importedData)) {
+              newData = importedData;
+            } else {
+              alert("Format file tidak valid");
+              return;
+            }
+
+            if (
+              confirm(
+                `Import ${newData.length} data? Data yang ada akan digabung dengan data baru.`
+              )
+            ) {
+              // Merge with existing data (avoid duplicates based on ID)
+              const existingIds = dataStore.map((item) => item.id);
+              const uniqueNewData = newData.filter(
+                (item) => !existingIds.includes(item.id)
+              );
+
+              dataStore = [...dataStore, ...uniqueNewData];
+              localStorage.setItem("tesdiaData", JSON.stringify(dataStore));
+              updateDataDisplay();
+
+              alert(
+                `Data berhasil diimport! ${uniqueNewData.length} data baru ditambahkan.`
+              );
+            }
+          } catch (error) {
+            alert("Error membaca file: " + error.message);
+          }
+        };
+        reader.readAsText(file);
+      }
+
+      // Clear all data
+      function clearAllData() {
+        if (
+          confirm(
+            "Apakah Anda yakin ingin menghapus SEMUA data? Tindakan ini tidak dapat dibatalkan!"
+          )
+        ) {
+          dataStore = [];
+          localStorage.setItem("tesdiaData", JSON.stringify(dataStore));
+          updateDataDisplay();
+        }
+      }
+
+      // Update data display
       function updateDataDisplay() {
         const table = document.getElementById("dataDisplay");
+
         if (dataStore.length === 0) {
-          table.innerHTML = `<div class="text-gray-500 text-center py-4 italic">Belum ada data tersimpan</div>`;
+          table.innerHTML = `<div class="text-gray-500 text-center py-8 italic">Belum ada data tersimpan</div>`;
           updateStats();
           return;
         }
 
-        const rows = dataStore.map((d) => {
+        // Sort by timestamp (newest first)
+        const sortedData = [...dataStore].sort((a, b) => {
+          const dateA = new Date(a.timestamp);
+          const dateB = new Date(b.timestamp);
+          return dateB - dateA;
+        });
+
+        const rows = sortedData.map((d, index) => {
           const indikasiColor =
             d.indikasi === "positif"
               ? "bg-red-100 text-red-800"
               : "bg-green-100 text-green-800";
+
           return `
-            <tr class="hover:bg-gray-50 transition">
-              <td class="px-4 py-2 text-sm">${d.timestamp}</td>
-              <td class="px-4 py-2 text-sm">${d.nama}</td>
-              <td class="px-4 py-2 text-sm">${d.nohp}</td>
-              <td class="px-4 py-2 text-sm">${d.sekolah}</td>
-              <td class="px-4 py-2 text-sm">${d.jabatan || "-"}</td>
-              <td class="px-4 py-2 text-sm">${d.tipejari}</td>
-              <td class="px-4 py-2">
-                <span class="inline-block px-2 py-1 text-xs rounded-full ${indikasiColor}">${
-            d.indikasi
-          }</span>
-              </td>
-            </tr>
-          `;
+                    <tr class="hover:bg-gray-50 transition-colors duration-200">
+                        <td class="px-2 py-2 text-xs">${index + 1}</td>
+                        <td class="px-2 py-2 text-xs">${d.timestamp}</td>
+                        <td class="px-2 py-2 text-xs font-medium">${d.nama}</td>
+                        <td class="px-2 py-2 text-xs">${d.nohp}</td>
+                        <td class="px-2 py-2 text-xs">${d.sekolah}</td>
+                        <td class="px-2 py-2 text-xs">${d.jabatan || "-"}</td>
+                        <td class="px-2 py-2 text-xs">${d.tipejari}</td>
+                        <td class="px-2 py-2">
+                            <span class="inline-block px-2 py-1 text-xs rounded-full ${indikasiColor}">
+                                ${d.indikasi}
+                            </span>
+                        </td>
+                        <td class="px-2 py-2 text-xs">${
+                          d.keterangan || "-"
+                        }</td>
+                        <td class="px-2 py-2 text-xs">${d.followup || "-"}</td>
+                        <td class="px-2 py-2">
+                            <button onclick="deleteData(${
+                              d.id
+                            })" class="text-red-500 hover:text-red-700 text-xs">
+                                🗑️
+                            </button>
+                        </td>
+                    </tr>
+                `;
         });
 
         table.innerHTML = `
-          <table class="min-w-full table-auto border-collapse rounded-lg overflow-hidden">
-            <thead class="bg-gray-200 text-gray-700">
-              <tr>
-                <th class="px-4 py-2 text-left">Waktu</th>
-                <th class="px-4 py-2 text-left">Nama</th>
-                <th class="px-4 py-2 text-left">No HP</th>
-                <th class="px-4 py-2 text-left">Sekolah</th>
-                <th class="px-4 py-2 text-left">Jabatan</th>
-                <th class="px-4 py-2 text-left">Tipe Jari</th>
-                <th class="px-4 py-2 text-left">Indikasi</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-100">
-              ${rows.join("")}
-            </tbody>
-          </table>
-        `;
+                <div class="overflow-x-auto">
+                    <table class="min-w-full table-auto border-collapse bg-white rounded-lg overflow-hidden shadow-sm">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="px-2 py-2 text-left text-xs font-semibold text-gray-600">#</th>
+                                <th class="px-2 py-2 text-left text-xs font-semibold text-gray-600">Waktu</th>
+                                <th class="px-2 py-2 text-left text-xs font-semibold text-gray-600">Nama</th>
+                                <th class="px-2 py-2 text-left text-xs font-semibold text-gray-600">No HP</th>
+                                <th class="px-2 py-2 text-left text-xs font-semibold text-gray-600">Sekolah</th>
+                                <th class="px-2 py-2 text-left text-xs font-semibold text-gray-600">Jabatan</th>
+                                <th class="px-2 py-2 text-left text-xs font-semibold text-gray-600">Tipe Jari</th>
+                                <th class="px-2 py-2 text-left text-xs font-semibold text-gray-600">Indikasi</th>
+                                <th class="px-2 py-2 text-left text-xs font-semibold text-gray-600">Keterangan</th>
+                                <th class="px-2 py-2 text-left text-xs font-semibold text-gray-600">Follow Up</th>
+                                <th class="px-2 py-2 text-left text-xs font-semibold text-gray-600">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            ${rows.join("")}
+                        </tbody>
+                    </table>
+                </div>
+            `;
 
         updateStats();
       }
 
+      // Delete individual data
+      function deleteData(id) {
+        if (confirm("Apakah Anda yakin ingin menghapus data ini?")) {
+          dataStore = dataStore.filter((item) => item.id !== id);
+          localStorage.setItem("tesdiaData", JSON.stringify(dataStore));
+          updateDataDisplay();
+        }
+      }
+
+      // Update statistics
       function updateStats() {
         const totalData = dataStore.length;
         const totalPositif = dataStore.filter(
@@ -465,15 +787,22 @@
           (d) => d.indikasi === "negatif"
         ).length;
 
-        document.getElementById("totalData").textContent = totalData;
-        document.getElementById("totalPositif").textContent = totalPositif;
-        document.getElementById("totalNegatif").textContent = totalNegatif;
+        const totalDataEl = document.getElementById("totalData");
+        const totalPositifEl = document.getElementById("totalPositif");
+        const totalNegatifEl = document.getElementById("totalNegatif");
+
+        if (totalDataEl) totalDataEl.textContent = totalData;
+        if (totalPositifEl) totalPositifEl.textContent = totalPositif;
+        if (totalNegatifEl) totalNegatifEl.textContent = totalNegatif;
       }
 
+      // Show message
       function showMessage(id) {
         ["successMessage", "errorMessage", "loadingMessage"].forEach((el) => {
-          document.getElementById(el).classList.add("hidden");
+          const element = document.getElementById(el);
+          if (element) element.classList.add("hidden");
         });
+
         const el = document.getElementById(id);
         if (el) {
           el.classList.remove("hidden");
@@ -483,9 +812,15 @@
         }
       }
 
+      // Clear form
       function clearForm() {
         document.getElementById("dataForm").reset();
       }
+
+      // Cleanup on page unload
+      window.addEventListener("beforeunload", () => {
+        stopAutoSync();
+      });
     </script>
   </body>
 </html>
