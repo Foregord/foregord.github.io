@@ -7,9 +7,29 @@
     <title>Form Akun Pembayaran</title>
     <script src="https://cdn.tailwindcss.com"></script>
   </head>
-  <body class="bg-gray-100 min-h-screen flex items-center justify-center">
-    <div class="bg-white p-8 rounded-xl shadow-xl w-full max-w-lg">
-      <h2 class="text-2xl font-bold mb-6 text-center">Form Akun Pembayaran</h2>
+  <body class="bg-gradient-to-br from-purple-50 to-pink-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+      <!-- Header -->
+      <div class="mb-8 text-center">
+        <div class="bg-white rounded-2xl p-6 shadow-xl">
+          <img
+            src="https://tesdia.id/wp-content/uploads/2023/03/cropped-hanya-logo-DIA.webp"
+            alt="Logo TesDIA"
+            class="mx-auto mb-4 w-24 h-24 rounded-full shadow-lg"
+          />
+          <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-2">
+            TesDIA Payment Manager
+          </h1>
+          <p class="text-lg text-gray-600">Dermatoglyphics, Intelligence, Analysis</p>
+          <p class="text-sm text-gray-500 mt-1">Form Akun Pembayaran</p>
+        </div>
+      </div>
+
+      <div class="max-w-4xl mx-auto">
+        <div class="bg-white p-8 rounded-xl shadow-xl">
+          <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b-4 border-purple-500 pb-3">
+            📝 Form Akun Pembayaran
+          </h2>
       <form id="akunForm" class="space-y-4">
         <div>
           <label for="nomorakun" class="block font-semibold mb-1"
@@ -89,27 +109,31 @@
           Simpan
         </button>
       </form>
-      <div id="resultMsg" class="mt-4 text-center"></div>
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6" id="statsAkun">
-        <div class="bg-blue-100 text-blue-800 p-4 rounded-lg text-center">
-          <div class="text-xl font-bold" id="totalAkun">0</div>
-          <div class="text-sm opacity-90">Total Akun</div>
-        </div>
-        <div class="bg-green-100 text-green-800 p-4 rounded-lg text-center">
-          <div class="text-xl font-bold" id="totalLunas">0</div>
-          <div class="text-sm opacity-90">Total Lunas</div>
-        </div>
-        <div class="bg-red-100 text-red-800 p-4 rounded-lg text-center">
-          <div class="text-xl font-bold" id="totalHutang">0</div>
-          <div class="text-sm opacity-90">Total Hutang</div>
-        </div>
-        <div class="bg-yellow-100 text-yellow-800 p-4 rounded-lg text-center">
-          <div class="text-xl font-bold" id="saldoAkun">Rp 0</div>
-          <div class="text-sm opacity-90">Saldo</div>
+          <div id="resultMsg" class="mt-4 text-center"></div>
+          
+          <!-- Stats Cards -->
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 mb-6" id="statsAkun">
+            <div class="bg-blue-100 text-blue-800 p-4 rounded-lg text-center">
+              <div class="text-xl font-bold" id="totalAkun">0</div>
+              <div class="text-sm opacity-90">Total Akun</div>
+            </div>
+            <div class="bg-green-100 text-green-800 p-4 rounded-lg text-center">
+              <div class="text-xl font-bold" id="totalLunas">0</div>
+              <div class="text-sm opacity-90">Total Lunas</div>
+            </div>
+            <div class="bg-red-100 text-red-800 p-4 rounded-lg text-center">
+              <div class="text-xl font-bold" id="totalHutang">0</div>
+              <div class="text-sm opacity-90">Total Hutang</div>
+            </div>
+            <div class="bg-yellow-100 text-yellow-800 p-4 rounded-lg text-center">
+              <div class="text-xl font-bold" id="saldoAkun">Rp 0</div>
+              <div class="text-sm opacity-90">Saldo</div>
+            </div>
+          </div>
+          
+          <div id="dataDisplay" class="mt-8 overflow-x-auto"></div>
         </div>
       </div>
-      <div id="dataDisplay" class="mt-8 overflow-x-auto"></div>
-    </div>
     <script>
       const APPS_SCRIPT_URL =
         "https://script.google.com/macros/s/AKfycbwnwHBtoiPCK1NNtCjhry8p53tm2SyP-RxXyDgX8W7x2t23pkr21kPWPz1QjkSg2Exejg/exec";
