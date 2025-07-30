@@ -304,7 +304,7 @@
 
     <script>
       const APPS_SCRIPT_URL =
-        "https://script.google.com/macros/s/AKfycbwLG1hchiZOEnReay3Haxgufq5rloB5aUsn7CvU6MUYofXofp13I9iePL0YjuMK8iYnjA/exec";
+        "https://script.google.com/macros/s/AKfycbxqK3O6H9lQHLpHvXkW0eDcJm9-ffbgRIb8xTkz24qQCPAkDDKp_8XGvvj0-pge0lMmdg/exec";
       let customerNames = [];
 
       // Variables for pagination
@@ -313,38 +313,127 @@
       let totalPages = 1;
       let searchQuery = "";
 
-      // Load existing customer names
+      // Load existing customer names using JSONP approach
       async function loadCustomerNames() {
         try {
-          const response = await fetch(`${APPS_SCRIPT_URL}?sheet=customer`);
-          const result = await response.json();
-          if (result.success) {
-            customerNames = result.data
+          // Use a simple approach with iframe for loading data
+          const data = await loadDataFromGoogleSheets("customer");
+          if (data && data.length > 0) {
+            customerNames = data
               .map((item) => item.nama)
-              .filter((name) => name);
+              .filter((name) => name && name.trim() !== "");
+
+            // Update autocomplete
+            autocomplete(document.getElementById("nama"), customerNames);
           }
         } catch (error) {
           console.error("Error loading customer names:", error);
         }
       }
 
-      // Load table data with pagination
+      // Load table data with pagination using JSONP approach
       async function loadTableData() {
         try {
-          const response = await fetch(
-            `${APPS_SCRIPT_URL}?sheet=customer&pagination=true&page=${currentPage}&limit=${currentLimit}&search=${encodeURIComponent(
+          const data = await loadDataFromGoogleSheets(
+            `customer&pagination=true&page=${currentPage}&limit=${currentLimit}&search=${encodeURIComponent(
               searchQuery
             )}`
           );
-          const result = await response.json();
 
-          if (result.success) {
-            displayTableData(result.data);
-            updatePagination(result.pagination);
+          if (data && data.data) {
+            displayTableData(data.data);
+            updatePagination(data.pagination);
+          } else if (data && Array.isArray(data)) {
+            // Fallback untuk data tanpa pagination
+            const startIndex = (currentPage - 1) * currentLimit;
+            const endIndex = startIndex + currentLimit;
+            const paginatedData = data.slice(startIndex, endIndex);
+
+            displayTableData(paginatedData);
+            updatePagination({
+              currentPage: currentPage,
+              totalPages: Math.ceil(data.length / currentLimit),
+              totalItems: data.length,
+            });
           }
         } catch (error) {
           console.error("Error loading table data:", error);
+          // Show error message in table
+          const tbody = document.getElementById("customerTableBody");
+          tbody.innerHTML =
+            '<tr><td colspan="7" class="text-center py-4 text-red-500">Error loading data. Please refresh the page.</td></tr>';
         }
+      }
+
+      // Generic function to load data from Google Sheets
+      async function loadDataFromGoogleSheets(params) {
+        // Try JSONP first
+        try {
+          return await loadDataViaJSONP(params);
+        } catch (error) {
+          console.log("JSONP failed, trying fallback method:", error);
+          // Fallback to basic fetch for simple data loading
+          try {
+            return await loadDataViaFetch(params);
+          } catch (fetchError) {
+            console.error("All methods failed:", fetchError);
+            throw fetchError;
+          }
+        }
+      }
+
+      // Load data using JSONP method
+      async function loadDataViaJSONP(params) {
+        return new Promise((resolve, reject) => {
+          const callbackName =
+            "jsonp_callback_" + Math.round(100000 * Math.random());
+
+          // Create script tag for JSONP
+          const script = document.createElement("script");
+          const url = `${APPS_SCRIPT_URL}?sheet=${params}&callback=${callbackName}`;
+
+          // Define callback function
+          window[callbackName] = function (data) {
+            // Clean up
+            document.head.removeChild(script);
+            delete window[callbackName];
+            resolve(data);
+          };
+
+          // Handle errors
+          script.onerror = function () {
+            document.head.removeChild(script);
+            delete window[callbackName];
+            reject(new Error("JSONP request failed"));
+          };
+
+          script.src = url;
+          document.head.appendChild(script);
+
+          // Timeout after 10 seconds
+          setTimeout(() => {
+            if (window[callbackName]) {
+              document.head.removeChild(script);
+              delete window[callbackName];
+              reject(new Error("JSONP request timeout"));
+            }
+          }, 10000);
+        });
+      }
+
+      // Fallback method using fetch (may have CORS issues but worth trying)
+      async function loadDataViaFetch(params) {
+        const response = await fetch(`${APPS_SCRIPT_URL}?sheet=${params}`, {
+          method: "GET",
+          mode: "cors",
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        return result;
       }
 
       // Display table data
@@ -546,7 +635,7 @@
         });
       }
 
-      // Form submission
+      // Form submission using iframe to avoid CORS
       document
         .getElementById("customerForm")
         .addEventListener("submit", async (e) => {
@@ -555,31 +644,84 @@
           const formData = new FormData(e.target);
           const data = Object.fromEntries(formData);
 
+          // Show loading message
+          const messageDiv = document.getElementById("responseMessage");
+          messageDiv.innerHTML =
+            '<div class="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded">⏳ Menyimpan data...</div>';
+
           try {
-            const response = await fetch(`${APPS_SCRIPT_URL}?sheet=customer`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify(data),
-            });
+            await saveToGoogleSheets(data);
 
-            const result = await response.json();
-            const messageDiv = document.getElementById("responseMessage");
+            messageDiv.innerHTML =
+              '<div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">✅ Data berhasil disimpan!</div>';
+            e.target.reset();
 
-            if (result.success) {
-              messageDiv.innerHTML =
-                '<div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">Data berhasil disimpan!</div>';
-              e.target.reset();
-            } else {
-              messageDiv.innerHTML = `<div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">Error: ${result.message}</div>`;
-            }
+            // Reload table data and customer names
+            setTimeout(() => {
+              loadTableData();
+              loadCustomerNames();
+            }, 1000);
           } catch (error) {
-            document.getElementById(
-              "responseMessage"
-            ).innerHTML = `<div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">Error: ${error.message}</div>`;
+            console.error("Error saving data:", error);
+            messageDiv.innerHTML = `<div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">❌ Error: ${error.message}</div>`;
           }
         });
+
+      // Save to Google Sheets using form submission to avoid CORS
+      async function saveToGoogleSheets(data) {
+        return new Promise((resolve, reject) => {
+          // Create a hidden iframe
+          const iframe = document.createElement("iframe");
+          iframe.style.display = "none";
+          iframe.name = "customerFormTarget";
+          document.body.appendChild(iframe);
+
+          // Create a hidden form
+          const form = document.createElement("form");
+          form.method = "POST";
+          form.action = APPS_SCRIPT_URL;
+          form.target = "customerFormTarget";
+          form.style.display = "none";
+
+          // Add sheet parameter
+          const sheetInput = document.createElement("input");
+          sheetInput.type = "hidden";
+          sheetInput.name = "sheet";
+          sheetInput.value = "customer";
+          form.appendChild(sheetInput);
+
+          // Add all data fields
+          Object.keys(data).forEach((key) => {
+            const input = document.createElement("input");
+            input.type = "hidden";
+            input.name = key;
+            input.value = data[key] || "";
+            form.appendChild(input);
+          });
+
+          // Handle iframe load event
+          iframe.onload = () => {
+            try {
+              // Clean up
+              document.body.removeChild(iframe);
+              document.body.removeChild(form);
+              resolve();
+            } catch (error) {
+              reject(error);
+            }
+          };
+
+          iframe.onerror = () => {
+            document.body.removeChild(iframe);
+            document.body.removeChild(form);
+            reject(new Error("Gagal mengirim data ke Google Sheets"));
+          };
+
+          // Submit the form
+          document.body.appendChild(form);
+          form.submit();
+        });
+      }
 
       // Initialize
       loadCustomerNames();

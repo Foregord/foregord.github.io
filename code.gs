@@ -1,9 +1,5 @@
 function doPost(e) {
   try {
-    if (!e || !e.postData || !e.postData.contents) {
-      throw new Error("Data POST tidak ditemukan");
-    }
-
     // Ambil parameter sheet, default ke 'Sheet1'
     let sheetName = "Sheet1";
     if (e.parameter && e.parameter.sheet) {
@@ -13,18 +9,28 @@ function doPost(e) {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const sheet = ss.getSheetByName(sheetName);
 
-    const contentType = e.postData.type;
     let data;
 
-    if (contentType === "application/x-www-form-urlencoded") {
-      const params = e.postData.contents.split("&").reduce((acc, pair) => {
-        const [key, val] = pair.split("=");
-        acc[decodeURIComponent(key)] = decodeURIComponent(val || "");
-        return acc;
-      }, {});
-      data = JSON.parse(params.data);
+    // Handle different types of POST data
+    if (e.parameter && Object.keys(e.parameter).length > 1) {
+      // Direct form parameters (from iframe submission)
+      data = e.parameter;
+    } else if (e.postData && e.postData.contents) {
+      // JSON or form-encoded data
+      const contentType = e.postData.type;
+
+      if (contentType === "application/x-www-form-urlencoded") {
+        const params = e.postData.contents.split("&").reduce((acc, pair) => {
+          const [key, val] = pair.split("=");
+          acc[decodeURIComponent(key)] = decodeURIComponent(val || "");
+          return acc;
+        }, {});
+        data = JSON.parse(params.data);
+      } else {
+        data = JSON.parse(e.postData.contents);
+      }
     } else {
-      data = JSON.parse(e.postData.contents);
+      throw new Error("No data received");
     }
 
     let newRow;
@@ -278,25 +284,43 @@ function doGetWithPagination(e) {
       }
     });
 
-    return ContentService.createTextOutput(
-      JSON.stringify({
-        success: true,
-        data: data,
-        pagination: {
-          currentPage: page,
-          totalPages: totalPages,
-          totalItems: totalItems,
-          limit: limit,
-        },
-      })
-    ).setMimeType(ContentService.MimeType.JSON);
+    const result = JSON.stringify({
+      success: true,
+      data: data,
+      pagination: {
+        currentPage: page,
+        totalPages: totalPages,
+        totalItems: totalItems,
+        limit: limit,
+      },
+    });
+
+    // Check for JSONP callback
+    if (e.parameter.callback) {
+      return ContentService.createTextOutput(
+        e.parameter.callback + "(" + result + ");"
+      ).setMimeType(ContentService.MimeType.JAVASCRIPT);
+    }
+
+    return ContentService.createTextOutput(result).setMimeType(
+      ContentService.MimeType.JSON
+    );
   } catch (error) {
-    return ContentService.createTextOutput(
-      JSON.stringify({
-        success: false,
-        message: error.toString(),
-      })
-    ).setMimeType(ContentService.MimeType.JSON);
+    const result = JSON.stringify({
+      success: false,
+      message: error.toString(),
+    });
+
+    // Check for JSONP callback
+    if (e.parameter.callback) {
+      return ContentService.createTextOutput(
+        e.parameter.callback + "(" + result + ");"
+      ).setMimeType(ContentService.MimeType.JAVASCRIPT);
+    }
+
+    return ContentService.createTextOutput(result).setMimeType(
+      ContentService.MimeType.JSON
+    );
   }
 }
 
@@ -318,9 +342,18 @@ function doGet(e) {
     const dataRange = sheet.getDataRange();
 
     if (dataRange.getNumRows() <= 1) {
-      return ContentService.createTextOutput(
-        JSON.stringify({ success: true, data: [] })
-      ).setMimeType(ContentService.MimeType.JSON);
+      const result = JSON.stringify({ success: true, data: [] });
+
+      // Check for JSONP callback
+      if (e.parameter.callback) {
+        return ContentService.createTextOutput(
+          e.parameter.callback + "(" + result + ");"
+        ).setMimeType(ContentService.MimeType.JAVASCRIPT);
+      }
+
+      return ContentService.createTextOutput(result).setMimeType(
+        ContentService.MimeType.JSON
+      );
     }
 
     const values = dataRange.getValues();
@@ -392,13 +425,34 @@ function doGet(e) {
       }
     });
 
-    return ContentService.createTextOutput(
-      JSON.stringify({ success: true, data: data })
-    ).setMimeType(ContentService.MimeType.JSON);
+    const result = JSON.stringify({ success: true, data: data });
+
+    // Check for JSONP callback
+    if (e.parameter.callback) {
+      return ContentService.createTextOutput(
+        e.parameter.callback + "(" + result + ");"
+      ).setMimeType(ContentService.MimeType.JAVASCRIPT);
+    }
+
+    return ContentService.createTextOutput(result).setMimeType(
+      ContentService.MimeType.JSON
+    );
   } catch (error) {
-    return ContentService.createTextOutput(
-      JSON.stringify({ success: false, message: error.toString() })
-    ).setMimeType(ContentService.MimeType.JSON);
+    const result = JSON.stringify({
+      success: false,
+      message: error.toString(),
+    });
+
+    // Check for JSONP callback
+    if (e.parameter.callback) {
+      return ContentService.createTextOutput(
+        e.parameter.callback + "(" + result + ");"
+      ).setMimeType(ContentService.MimeType.JAVASCRIPT);
+    }
+
+    return ContentService.createTextOutput(result).setMimeType(
+      ContentService.MimeType.JSON
+    );
   }
 }
 
