@@ -441,6 +441,10 @@
           metodePembayaran: metodePembayaran,
         };
 
+        // Set document title untuk nama file PDF
+        const customerName = customerData.nama || "Customer";
+        document.title = `${customerName} - Nota Pembayaran TesDIA`;
+
         // Show nota, hide form
         document.getElementById("inputForm").classList.add("hidden");
         document.getElementById("notaDigital").classList.remove("hidden");
@@ -452,7 +456,19 @@
       }
 
       function printNota() {
-        window.print();
+        // Set document title sebelum print untuk nama file PDF
+        const customerName = customerData.nama || "Customer";
+        const originalTitle = document.title;
+        document.title = `${customerName} - Nota Pembayaran TesDIA`;
+
+        // Print dengan delay singkat untuk memastikan title terupdate
+        setTimeout(() => {
+          window.print();
+          // Restore original title setelah print
+          setTimeout(() => {
+            document.title = originalTitle;
+          }, 1000);
+        }, 100);
       }
 
       function shareWhatsApp() {
