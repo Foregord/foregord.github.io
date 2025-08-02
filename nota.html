@@ -69,15 +69,56 @@
 
           <div>
             <label class="block text-gray-700 text-sm font-bold mb-2">
-              Harga Asli Tes <span class="text-red-500">*</span>
+              Harga Per Tes <span class="text-red-500">*</span>
             </label>
             <input
               type="number"
               id="nominalAsli"
-              placeholder="Masukkan harga asli tes (contoh: 350000)"
+              placeholder="Masukkan harga per tes (contoh: 350000)"
               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
               required
             />
+          </div>
+
+          <div>
+            <label class="block text-gray-700 text-sm font-bold mb-2">
+              Jumlah Orang <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="number"
+              id="quantity"
+              placeholder="Berapa orang yang tes? (contoh: 4)"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
+              value="1"
+              min="1"
+              required
+            />
+          </div>
+
+          <div>
+            <label class="block text-gray-700 text-sm font-bold mb-2">
+              Subtotal (Harga × Jumlah)
+            </label>
+            <input
+              type="text"
+              id="subtotal"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 font-semibold text-blue-600"
+              readonly
+              placeholder="Akan dihitung otomatis"
+            />
+          </div>
+
+          <div>
+            <label class="block text-gray-700 text-sm font-bold mb-2">
+              Jenis Diskon
+            </label>
+            <select
+              id="diskonType"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
+            >
+              <option value="total">Diskon Total (dari keseluruhan)</option>
+              <option value="per-item">Diskon Per Orang</option>
+            </select>
           </div>
 
           <div>
@@ -87,10 +128,13 @@
             <input
               type="number"
               id="diskonAmount"
-              placeholder="Masukkan jumlah diskon (contoh: 100000)"
+              placeholder="Masukkan jumlah diskon"
               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
               value="0"
             />
+            <p class="text-xs text-gray-500 mt-1" id="diskonInfo">
+              Diskon akan dikurangi dari total keseluruhan
+            </p>
           </div>
 
           <div>
@@ -194,7 +238,7 @@
                 <div>
                   <h1 class="text-2xl font-bold">TesDIA</h1>
                   <p class="text-sm opacity-90">
-                    Dermatoglyphics, Intelligence, Analysis
+                    Dermatoglyphics Intelligence Analysis
                   </p>
                 </div>
               </div>
@@ -252,34 +296,34 @@
               Detail Pembayaran
             </h3>
             <div class="bg-gray-50 rounded-lg p-4">
-              <div class="grid grid-cols-2 gap-4">
-                <div class="space-y-3">
-                  <div class="flex justify-between">
-                    <span class="text-gray-600">Biaya Tes:</span>
-                    <span class="font-semibold" id="notaBiayaTes"></span>
-                  </div>
-                  <div class="flex justify-between">
-                    <span class="text-gray-600">Metode Bayar:</span>
-                    <span class="font-semibold" id="notaMetode"></span>
-                  </div>
+              <div class="space-y-3">
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Biaya Per Tes:</span>
+                  <span class="font-semibold" id="notaBiayaTes"></span>
                 </div>
-                <div class="space-y-3">
-                  <div class="flex justify-between">
-                    <span class="text-gray-600">Diskon/Potongan:</span>
-                    <span
-                      class="font-semibold text-red-600"
-                      id="notaDiskon"
-                    ></span>
-                  </div>
-                  <div class="flex justify-between border-t pt-2">
-                    <span class="text-lg font-bold text-gray-800"
-                      >Total Bayar:</span
-                    >
-                    <span
-                      class="text-lg font-bold text-green-600"
-                      id="notaTotal"
-                    ></span>
-                  </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Subtotal:</span>
+                  <span class="font-semibold" id="notaSubtotal"></span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Diskon/Potongan:</span>
+                  <span
+                    class="font-semibold text-red-600"
+                    id="notaDiskon"
+                  ></span>
+                </div>
+                <div class="flex justify-between border-t pt-2">
+                  <span class="text-lg font-bold text-gray-800"
+                    >Total Bayar:</span
+                  >
+                  <span
+                    class="text-lg font-bold text-green-600"
+                    id="notaTotal"
+                  ></span>
+                </div>
+                <div class="flex justify-between text-sm text-gray-500">
+                  <span>Metode Pembayaran:</span>
+                  <span class="font-semibold" id="notaMetode"></span>
                 </div>
               </div>
             </div>
@@ -299,7 +343,7 @@
               Terima kasih telah menggunakan layanan TesDIA
             </p>
             <p class="text-xs text-gray-500">
-              Website: tesdia.id | Email: info@tesdia.id
+              Website: tesdia.id | Email: tesdiabdg@gmail.com
             </p>
             <p class="text-xs text-gray-400 mt-2">
               Nota digital ini sah dan dapat digunakan sebagai bukti pembayaran
@@ -342,18 +386,57 @@
           .getElementById("nominalAsli")
           .addEventListener("input", calculateTotal);
         document
+          .getElementById("quantity")
+          .addEventListener("input", calculateTotal);
+        document
           .getElementById("diskonAmount")
           .addEventListener("input", calculateTotal);
+        document
+          .getElementById("diskonType")
+          .addEventListener("change", updateDiskonInfo);
+
+        // Initialize diskon info
+        updateDiskonInfo();
+      }
+
+      function updateDiskonInfo() {
+        const diskonType = document.getElementById("diskonType").value;
+        const diskonInfo = document.getElementById("diskonInfo");
+
+        if (diskonType === "per-item") {
+          diskonInfo.textContent = "Diskon akan dikurangi dari harga per orang";
+        } else {
+          diskonInfo.textContent =
+            "Diskon akan dikurangi dari total keseluruhan";
+        }
       }
 
       function calculateTotal() {
-        const nominalAsli =
+        const hargaPerTes =
           parseInt(document.getElementById("nominalAsli").value) || 0;
+        const quantity =
+          parseInt(document.getElementById("quantity").value) || 1;
         const diskon =
           parseInt(document.getElementById("diskonAmount").value) || 0;
-        const total = nominalAsli - diskon;
+        const diskonType = document.getElementById("diskonType").value;
 
-        if (nominalAsli > 0) {
+        // Calculate subtotal
+        const subtotal = hargaPerTes * quantity;
+        document.getElementById("subtotal").value =
+          subtotal > 0 ? `Rp ${subtotal.toLocaleString("id-ID")}` : "";
+
+        // Calculate total after discount
+        let total = 0;
+        if (diskonType === "per-item") {
+          // Diskon per orang: (harga - diskon) × quantity
+          const hargaSetelahDiskon = Math.max(0, hargaPerTes - diskon);
+          total = hargaSetelahDiskon * quantity;
+        } else {
+          // Diskon total: (harga × quantity) - diskon
+          total = Math.max(0, subtotal - diskon);
+        }
+
+        if (hargaPerTes > 0) {
           document.getElementById(
             "totalBayar"
           ).value = `Rp ${total.toLocaleString("id-ID")}`;
@@ -364,20 +447,42 @@
 
       function generateNota() {
         const nominalAsli = document.getElementById("nominalAsli").value;
+        const quantity = document.getElementById("quantity").value;
         const diskonAmount = document.getElementById("diskonAmount").value;
+        const diskonType = document.getElementById("diskonType").value;
         const metodePembayaran =
           document.getElementById("metodePembayaran").value;
         const catatan = document.getElementById("catatan").value;
 
-        if (!nominalAsli || !metodePembayaran) {
-          alert("Mohon lengkapi harga asli tes dan metode pembayaran");
+        if (!nominalAsli || !quantity || !metodePembayaran) {
+          alert(
+            "Mohon lengkapi harga per tes, jumlah orang, dan metode pembayaran"
+          );
           return;
         }
 
         // Calculate totals
-        const nominalAsliValue = parseInt(nominalAsli);
+        const hargaPerTesValue = parseInt(nominalAsli);
+        const quantityValue = parseInt(quantity);
         const diskonValue = parseInt(diskonAmount) || 0;
-        const totalBayar = nominalAsliValue - diskonValue;
+        const subtotal = hargaPerTesValue * quantityValue;
+
+        let totalBayar = 0;
+        let diskonTotal = 0;
+
+        if (diskonType === "per-item") {
+          // Diskon per orang
+          const hargaSetelahDiskon = Math.max(
+            0,
+            hargaPerTesValue - diskonValue
+          );
+          totalBayar = hargaSetelahDiskon * quantityValue;
+          diskonTotal = diskonValue * quantityValue;
+        } else {
+          // Diskon total
+          totalBayar = Math.max(0, subtotal - diskonValue);
+          diskonTotal = diskonValue;
+        }
 
         // Populate nota
         document.getElementById("notaDate").textContent =
@@ -409,14 +514,30 @@
             "px-2 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800";
         }
 
+        // Update payment details
         document.getElementById(
           "notaBiayaTes"
-        ).textContent = `Rp ${nominalAsliValue.toLocaleString("id-ID")}`;
+        ).textContent = `Rp ${hargaPerTesValue.toLocaleString(
+          "id-ID"
+        )} × ${quantityValue} orang`;
+        document.getElementById(
+          "notaSubtotal"
+        ).textContent = `Rp ${subtotal.toLocaleString("id-ID")}`;
         document.getElementById("notaMetode").textContent = metodePembayaran;
-        document.getElementById("notaDiskon").textContent =
-          diskonValue > 0
-            ? `- Rp ${diskonValue.toLocaleString("id-ID")}`
-            : "Rp 0";
+
+        // Update diskon display
+        if (diskonTotal > 0) {
+          const diskonText =
+            diskonType === "per-item"
+              ? `- Rp ${diskonValue.toLocaleString(
+                  "id-ID"
+                )} × ${quantityValue} orang`
+              : `- Rp ${diskonTotal.toLocaleString("id-ID")}`;
+          document.getElementById("notaDiskon").textContent = diskonText;
+        } else {
+          document.getElementById("notaDiskon").textContent = "Rp 0";
+        }
+
         document.getElementById(
           "notaTotal"
         ).textContent = `Rp ${totalBayar.toLocaleString("id-ID")}`;
@@ -435,8 +556,11 @@
         window.notaData = {
           customerName: customerData.nama || "",
           jenisTest: customerData.jenistes || "",
-          hargaAsli: nominalAsliValue,
-          diskon: diskonValue,
+          hargaPerTes: hargaPerTesValue,
+          quantity: quantityValue,
+          subtotal: subtotal,
+          diskon: diskonTotal,
+          diskonType: diskonType,
           totalBayar: totalBayar,
           metodePembayaran: metodePembayaran,
         };
@@ -475,22 +599,33 @@
         const data = window.notaData || {};
         const customerName = data.customerName || "";
         const jenisTest = data.jenisTest || "";
-        const hargaAsli = data.hargaAsli || 0;
+        const hargaPerTes = data.hargaPerTes || 0;
+        const quantity = data.quantity || 1;
+        const subtotal = data.subtotal || 0;
         const diskon = data.diskon || 0;
+        const diskonType = data.diskonType || "total";
         const totalBayar = data.totalBayar || 0;
         const metodePembayaran = data.metodePembayaran || "";
 
         let message = `*NOTA PEMBAYARAN - TesDIA*
 
-🏥 *Dermatoglyphics, Intelligence, Analysis*
+🏥 *Dermatoglyphics Intelligence Analysis*
 
 👤 *Customer:* ${customerName}
 📋 *Jenis Tes:* ${jenisTest}
-💰 *Harga Asli:* Rp ${hargaAsli.toLocaleString("id-ID")}`;
+💰 *Harga Per Tes:* Rp ${hargaPerTes.toLocaleString("id-ID")}
+👥 *Jumlah Orang:* ${quantity} orang
+💵 *Subtotal:* Rp ${subtotal.toLocaleString("id-ID")}`;
 
         if (diskon > 0) {
+          const diskonText =
+            diskonType === "per-item"
+              ? `Rp ${(diskon / quantity).toLocaleString(
+                  "id-ID"
+                )} × ${quantity} orang`
+              : `Rp ${diskon.toLocaleString("id-ID")}`;
           message += `
-💸 *Diskon:* Rp ${diskon.toLocaleString("id-ID")}`;
+💸 *Diskon:* ${diskonText}`;
         }
 
         message += `
