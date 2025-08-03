@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nota Transaksi - HinziStore</title>
+    <link rel="icon" href="logo-hinzistore.png" type="image/png" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+
+      .nota-container {
+        background: white;
+        width: 100%;
+        max-width: 400px;
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        position: relative;
+      }
+
+      .header {
+        text-align: center;
+        border-bottom: 3px solid #3b82f6;
+        padding-bottom: 20px;
+        margin-bottom: 25px;
+      }
+
+      .logo {
+        width: 60px;
+        height: 60px;
+        margin: 0 auto 15px;
+        border-radius: 50%;
+        overflow: hidden;
+        border: 3px solid #3b82f6;
+      }
+
+      .logo img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .store-name {
+        font-size: 28px;
+        font-weight: bold;
+        color: #1e40af;
+        margin-bottom: 8px;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      .tagline {
+        color: #6b7280;
+        font-size: 14px;
+        font-style: italic;
+      }
+
+      .transaction-details {
+        margin-bottom: 25px;
+      }
+
+      .row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px dashed #e5e7eb;
+      }
+
+      .row:last-child {
+        border-bottom: none;
+      }
+
+      .label {
+        font-weight: 600;
+        color: #374151;
+      }
+
+      .value {
+        font-weight: 500;
+        color: #1f2937;
+        text-align: right;
+      }
+
+      .total-section {
+        background: linear-gradient(135deg, #3b82f6, #1e40af);
+        color: white;
+        padding: 20px;
+        border-radius: 10px;
+        margin: 20px 0;
+        text-align: center;
+      }
+
+      .total-label {
+        font-size: 14px;
+        opacity: 0.9;
+        margin-bottom: 5px;
+      }
+
+      .total-amount {
+        font-size: 24px;
+        font-weight: bold;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      }
+
+      .promo-section {
+        background: #fef3c7;
+        border: 2px dashed #f59e0b;
+        border-radius: 10px;
+        padding: 15px;
+        margin: 20px 0;
+        text-align: center;
+      }
+
+      .promo-title {
+        font-weight: bold;
+        color: #92400e;
+        margin-bottom: 10px;
+        font-size: 16px;
+      }
+
+      .promo-text {
+        color: #b45309;
+        font-size: 14px;
+        line-height: 1.5;
+      }
+
+      .footer {
+        text-align: center;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 2px solid #e5e7eb;
+      }
+
+      .thank-you {
+        font-weight: bold;
+        color: #1e40af;
+        margin-bottom: 10px;
+        font-size: 16px;
+      }
+
+      .contact-info {
+        color: #6b7280;
+        font-size: 12px;
+        line-height: 1.6;
+      }
+
+      .print-controls {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        display: flex;
+        gap: 10px;
+        z-index: 1000;
+      }
+
+      .btn {
+        padding: 12px 20px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .btn-primary {
+        background: #3b82f6;
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background: #2563eb;
+        transform: translateY(-2px);
+      }
+
+      .btn-secondary {
+        background: #6b7280;
+        color: white;
+      }
+
+      .btn-secondary:hover {
+        background: #4b5563;
+        transform: translateY(-2px);
+      }
+
+      @media print {
+        body {
+          background: white;
+          padding: 0;
+          min-height: auto;
+        }
+
+        .nota-container {
+          box-shadow: none;
+          border-radius: 0;
+          max-width: none;
+          width: 100%;
+          padding: 20px;
+        }
+
+        .print-controls {
+          display: none;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .nota-container {
+          padding: 20px;
+          margin: 10px;
+        }
+
+        .store-name {
+          font-size: 24px;
+        }
+
+        .total-amount {
+          font-size: 20px;
+        }
+      }
+
+      /* Custom scrollbar */
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      ::-webkit-scrollbar-track {
+        background: #f1f5f9;
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 4px;
+      }
+
+      ::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Print Controls -->
+    <div class="print-controls">
+      <button class="btn btn-primary" onclick="downloadPDF()">
+        📄 Download PDF
+      </button>
+      <button class="btn btn-secondary" onclick="printNota()">🖨️ Print</button>
+      <a href="index.html" class="btn btn-secondary"> ← Kembali </a>
+    </div>
+
+    <!-- Nota Container -->
+    <div class="nota-container" id="notaContainer">
+      <!-- Header -->
+      <div class="header">
+        <div class="logo">
+          <img src="logo-hinzistore.png" alt="HinziStore Logo" />
+        </div>
+        <div class="store-name">HinziStore</div>
+        <div class="tagline">Pusat Top Up Game & Pulsa Terpercaya</div>
+      </div>
+
+      <!-- Transaction Details -->
+      <div class="transaction-details">
+        <div class="row">
+          <span class="label">📅 Tanggal:</span>
+          <span class="value" id="tanggal">-</span>
+        </div>
+        <div class="row">
+          <span class="label">📱 No HP:</span>
+          <span class="value" id="nohp">-</span>
+        </div>
+        <div class="row">
+          <span class="label">🎮 Produk:</span>
+          <span class="value" id="deskripsi">-</span>
+        </div>
+      </div>
+
+      <!-- Total Section -->
+      <div class="total-section">
+        <div class="total-label">Total Pembayaran</div>
+        <div class="total-amount" id="nominal">Rp 0</div>
+      </div>
+
+      <!-- Promo Section - Mudah untuk customisasi -->
+      <div class="promo-section">
+        <div class="promo-title">🎉 PROMO SPESIAL!</div>
+        <div class="promo-text">
+          <strong>Cashback 5%</strong> untuk pembelian berikutnya!<br />
+          <strong>Top up minimal Rp 50.000</strong> dapat bonus diamond ML!<br />
+          <em>*Syarat dan ketentuan berlaku</em>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="footer">
+        <div class="thank-you">Terima kasih atas kepercayaan Anda! 🙏</div>
+        <div class="contact-info">
+          HinziStore - Solusi Top Up Terbaik<br />
+          WhatsApp: <strong>0813-3037-4331</strong><br />
+          Instagram: <strong>@hinzistore</strong><br />
+          <em>Buka 24 Jam - Siap Melayani Anda</em>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Ambil parameter dari URL
+      function getURLParams() {
+        const params = new URLSearchParams(window.location.search);
+        return {
+          tanggal: params.get("tanggal") || "-",
+          nohp: params.get("nohp") || "-",
+          deskripsi: params.get("deskripsi") || "-",
+          nominal: parseInt(params.get("nominal")) || 0,
+        };
+      }
+
+      // Isi data nota
+      function populateNota() {
+        const data = getURLParams();
+
+        document.getElementById("tanggal").textContent = data.tanggal;
+        document.getElementById("nohp").textContent = data.nohp;
+        document.getElementById("deskripsi").textContent = data.deskripsi;
+        document.getElementById(
+          "nominal"
+        ).textContent = `Rp ${data.nominal.toLocaleString("id-ID")}`;
+
+        // Update title
+        document.title = `Nota ${data.nohp} - HinziStore`;
+      }
+
+      // Print nota
+      function printNota() {
+        window.print();
+      }
+
+      // Download PDF dengan nama No HP
+      function downloadPDF() {
+        const data = getURLParams();
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF();
+
+        // Set font
+        pdf.setFont("helvetica");
+
+        // Header
+        pdf.setFontSize(20);
+        pdf.setTextColor(30, 64, 175);
+        pdf.text("HinziStore", 105, 30, { align: "center" });
+
+        pdf.setFontSize(12);
+        pdf.setTextColor(107, 114, 128);
+        pdf.text("Pusat Top Up Game & Pulsa Terpercaya", 105, 40, {
+          align: "center",
+        });
+
+        // Line
+        pdf.setLineWidth(1);
+        pdf.setDrawColor(59, 130, 246);
+        pdf.line(20, 50, 190, 50);
+
+        // Transaction details
+        pdf.setFontSize(12);
+        pdf.setTextColor(0, 0, 0);
+
+        pdf.text("Tanggal:", 20, 70);
+        pdf.text(data.tanggal, 60, 70);
+
+        pdf.text("No HP:", 20, 85);
+        pdf.text(data.nohp, 60, 85);
+
+        pdf.text("Produk:", 20, 100);
+        pdf.text(data.deskripsi, 60, 100);
+
+        // Total
+        pdf.setFontSize(16);
+        pdf.setTextColor(30, 64, 175);
+        pdf.text("Total Pembayaran:", 20, 125);
+        pdf.text(`Rp ${data.nominal.toLocaleString("id-ID")}`, 105, 125, {
+          align: "center",
+        });
+
+        // Promo
+        pdf.setFontSize(10);
+        pdf.setTextColor(146, 64, 14);
+        pdf.text("PROMO SPESIAL!", 105, 150, { align: "center" });
+        pdf.text("Cashback 5% untuk pembelian berikutnya!", 105, 160, {
+          align: "center",
+        });
+        pdf.text("Top up minimal Rp 50.000 dapat bonus diamond ML!", 105, 170, {
+          align: "center",
+        });
+
+        // Footer
+        pdf.setFontSize(10);
+        pdf.setTextColor(107, 114, 128);
+        pdf.text("Terima kasih atas kepercayaan Anda!", 105, 190, {
+          align: "center",
+        });
+        pdf.text(
+          "HinziStore - Buka 24 Jam - WhatsApp: 0813-3037-4331",
+          105,
+          200,
+          { align: "center" }
+        );
+
+        // Download with filename based on phone number
+        const filename = `${data.nohp}-Nota.pdf`;
+        pdf.save(filename);
+      }
+
+      // Initialize
+      document.addEventListener("DOMContentLoaded", function () {
+        populateNota();
+      });
+
+      // Keyboard shortcuts
+      document.addEventListener("keydown", function (e) {
+        if (e.ctrlKey && e.key === "p") {
+          e.preventDefault();
+          printNota();
+        }
+        if (e.ctrlKey && e.key === "s") {
+          e.preventDefault();
+          downloadPDF();
+        }
+      });
+
+      // Auto focus and smooth animations
+      window.addEventListener("load", function () {
+        document.querySelector(".nota-container").style.animation =
+          "slideIn 0.5s ease-out";
+      });
+
+      // Add CSS animation
+      const style = document.createElement("style");
+      style.textContent = `
+            @keyframes slideIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(30px) scale(0.95);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0) scale(1);
+                }
+            }
+        `;
+      document.head.appendChild(style);
+    </script>
+  </body>
+</html>

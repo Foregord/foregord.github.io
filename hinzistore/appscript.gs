@@ -21,16 +21,41 @@ function doGet(e) {
     const action = e.parameter.action || "getTransactions";
 
     if (action === "getTransactions") {
-      return getTransactions();
+      const result = getTransactions();
+
+      // Support JSONP callback untuk mengatasi CORS
+      const callback = e.parameter.callback;
+      if (callback) {
+        const jsonpResult = `${callback}(${result.getContent()})`;
+        return ContentService.createTextOutput(jsonpResult).setMimeType(
+          ContentService.MimeType.JAVASCRIPT
+        );
+      }
+
+      return result;
     }
 
     return ContentService.createTextOutput(
       JSON.stringify({ success: false, message: "Unknown action" })
     ).setMimeType(ContentService.MimeType.JSON);
   } catch (error) {
-    return ContentService.createTextOutput(
-      JSON.stringify({ success: false, message: error.toString() })
-    ).setMimeType(ContentService.MimeType.JSON);
+    const errorResult = JSON.stringify({
+      success: false,
+      message: error.toString(),
+    });
+
+    // Support JSONP callback untuk error juga
+    const callback = e.parameter.callback;
+    if (callback) {
+      const jsonpError = `${callback}(${errorResult})`;
+      return ContentService.createTextOutput(jsonpError).setMimeType(
+        ContentService.MimeType.JAVASCRIPT
+      );
+    }
+
+    return ContentService.createTextOutput(errorResult).setMimeType(
+      ContentService.MimeType.JSON
+    );
   }
 }
 
