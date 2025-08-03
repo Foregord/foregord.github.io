@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HinziStore - Pencatatan Transaksi</title>
+    <link rel="icon" href="logo-hinzistore.png" type="image/png" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#3b82f6",
+              secondary: "#1e40af",
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      .gradient-bg {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      }
+      @media print {
+        .no-print {
+          display: none !important;
+        }
+        body {
+          background: white !important;
+        }
+      }
+    </style>
+  </head>
+  <body class="bg-gray-100 min-h-screen">
+    <!-- Header -->
+    <div class="gradient-bg text-white p-6 mb-8">
+      <div class="max-w-6xl mx-auto flex items-center justify-between">
+        <div class="flex items-center space-x-4">
+          <img
+            src="logo-hinzistore.png"
+            alt="HinziStore"
+            class="w-12 h-12 rounded-lg"
+          />
+          <div>
+            <h1 class="text-2xl font-bold">HinziStore</h1>
+            <p class="text-blue-100">Sistem Pencatatan Transaksi</p>
+          </div>
+        </div>
+        <button
+          onclick="window.print()"
+          class="no-print bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-colors"
+        >
+          🖨️ Cetak Laporan
+        </button>
+      </div>
+    </div>
+
+    <div class="max-w-6xl mx-auto px-4 space-y-8">
+      <!-- FORM INPUT -->
+      <div class="bg-white rounded-lg shadow-lg p-6">
+        <h2 class="text-xl font-bold text-gray-800 mb-6 border-b pb-3">
+          📝 FORM INPUT TRANSAKSI
+        </h2>
+
+        <form
+          id="transactionForm"
+          class="grid grid-cols-1 md:grid-cols-4 gap-4"
+        >
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >No HP</label
+            >
+            <input
+              type="tel"
+              name="nohp"
+              required
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="08123456789"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Deskripsi</label
+            >
+            <input
+              type="text"
+              name="deskripsi"
+              required
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Pulsa 10K, ML Diamond, dll"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Harga (Rp)</label
+            >
+            <input
+              type="number"
+              name="harga"
+              required
+              min="1"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="15000"
+            />
+          </div>
+
+          <div class="flex items-end">
+            <button
+              type="submit"
+              class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md transition-colors font-medium"
+            >
+              💾 Simpan
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- DATA TRANSAKSI -->
+      <div class="bg-white rounded-lg shadow-lg p-6">
+        <div class="flex justify-between items-center mb-6 border-b pb-3">
+          <h2 class="text-xl font-bold text-gray-800">📊 DATA TRANSAKSI</h2>
+          <div class="flex space-x-2">
+            <button
+              onclick="cetakNota()"
+              id="notaBtn"
+              class="no-print bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md transition-colors font-medium"
+              disabled
+            >
+              🧾 Cetak Nota
+            </button>
+            <button
+              onclick="refreshData()"
+              class="no-print bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition-colors"
+            >
+              🔄 Refresh
+            </button>
+          </div>
+        </div>
+
+        <!-- Loading -->
+        <div id="loading" class="text-center py-8">
+          <div
+            class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"
+          ></div>
+          <p class="mt-2 text-gray-600">Memuat data...</p>
+        </div>
+
+        <!-- Tabel Transaksi -->
+        <div id="tableContainer" class="hidden overflow-x-auto">
+          <table class="w-full border-collapse border border-gray-300">
+            <thead>
+              <tr class="bg-gray-50">
+                <th class="border border-gray-300 px-4 py-2 text-left">#</th>
+                <th class="border border-gray-300 px-4 py-2 text-left">
+                  Tanggal
+                </th>
+                <th class="border border-gray-300 px-4 py-2 text-left">
+                  No HP
+                </th>
+                <th class="border border-gray-300 px-4 py-2 text-left">
+                  Deskripsi
+                </th>
+                <th class="border border-gray-300 px-4 py-2 text-right">
+                  Harga
+                </th>
+                <th
+                  class="border border-gray-300 px-4 py-2 text-center no-print"
+                >
+                  Aksi
+                </th>
+              </tr>
+            </thead>
+            <tbody id="transactionTable">
+              <!-- Data akan dimuat di sini -->
+            </tbody>
+            <tfoot>
+              <tr class="bg-blue-50 font-bold">
+                <td
+                  colspan="4"
+                  class="border border-gray-300 px-4 py-2 text-right"
+                >
+                  Total Penjualan:
+                </td>
+                <td
+                  id="totalSales"
+                  class="border border-gray-300 px-4 py-2 text-right"
+                >
+                  Rp 0
+                </td>
+                <td class="border border-gray-300 px-4 py-2 no-print"></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Success/Error Messages -->
+    <div id="messageContainer" class="fixed top-4 right-4 z-50 hidden">
+      <div
+        id="successMessage"
+        class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg hidden"
+      >
+        ✅ Transaksi berhasil disimpan!
+      </div>
+      <div
+        id="errorMessage"
+        class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg hidden"
+      >
+        ❌ Gagal menyimpan transaksi!
+      </div>
+    </div>
+
+    <script>
+      const scriptURL =
+        "https://script.google.com/macros/s/AKfycbxgf-rZCCWbvoy2OR6st1E5h1r695mHYYMO4UVSTbsGiaE3sIUjYKlaFpD675wv9Lqp0Q/exec";
+      let transactionData = [];
+      let selectedTransaction = null;
+
+      // Form submission
+      document
+        .getElementById("transactionForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const formData = new FormData(e.target);
+          formData.append("action", "saveTransaction");
+
+          try {
+            const response = await fetch(scriptURL, {
+              method: "POST",
+              body: formData,
+            });
+
+            const result = await response.json();
+            if (result.success) {
+              showMessage("success");
+              e.target.reset();
+              loadTransactions();
+            } else {
+              throw new Error(result.message);
+            }
+          } catch (error) {
+            console.error("Error:", error);
+            showMessage("error");
+          }
+        });
+
+      // Load transactions
+      async function loadTransactions() {
+        try {
+          const response = await fetch(`${scriptURL}?action=getTransactions`);
+          const result = await response.json();
+
+          if (result.success) {
+            transactionData = result.transactions;
+            renderTable();
+          }
+        } catch (error) {
+          console.error("Error loading transactions:", error);
+        }
+      }
+
+      // Render table
+      function renderTable() {
+        const tableBody = document.getElementById("transactionTable");
+        const loading = document.getElementById("loading");
+        const tableContainer = document.getElementById("tableContainer");
+        const totalSales = document.getElementById("totalSales");
+
+        if (transactionData.length === 0) {
+          tableBody.innerHTML =
+            '<tr><td colspan="6" class="border border-gray-300 px-4 py-8 text-center text-gray-500">Belum ada data transaksi</td></tr>';
+        } else {
+          let total = 0;
+          tableBody.innerHTML = transactionData
+            .map((item, index) => {
+              total += item.nominal;
+              return `
+                        <tr class="hover:bg-gray-50">
+                            <td class="border border-gray-300 px-4 py-2">${
+                              index + 1
+                            }</td>
+                            <td class="border border-gray-300 px-4 py-2">${
+                              item.tanggal
+                            }</td>
+                            <td class="border border-gray-300 px-4 py-2">${
+                              item.nohp
+                            }</td>
+                            <td class="border border-gray-300 px-4 py-2">${
+                              item.deskripsi
+                            }</td>
+                            <td class="border border-gray-300 px-4 py-2 text-right">Rp ${item.nominal.toLocaleString(
+                              "id-ID"
+                            )}</td>
+                            <td class="border border-gray-300 px-4 py-2 text-center no-print">
+                                <button onclick="selectForNota(${index})" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm">
+                                    Pilih
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+            })
+            .join("");
+
+          totalSales.textContent = `Rp ${total.toLocaleString("id-ID")}`;
+        }
+
+        loading.classList.add("hidden");
+        tableContainer.classList.remove("hidden");
+      }
+
+      // Select transaction for nota
+      function selectForNota(index) {
+        selectedTransaction = transactionData[index];
+        document.getElementById("notaBtn").disabled = false;
+
+        // Highlight selected row
+        document.querySelectorAll("#transactionTable tr").forEach((row, i) => {
+          if (i === index) {
+            row.classList.add("bg-blue-100");
+          } else {
+            row.classList.remove("bg-blue-100");
+          }
+        });
+      }
+
+      // Cetak nota
+      function cetakNota() {
+        if (!selectedTransaction) {
+          alert("Silakan pilih transaksi terlebih dahulu");
+          return;
+        }
+
+        const notaWindow = window.open("", "_blank");
+        notaWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Nota Transaksi - HinziStore</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; max-width: 400px; margin: 0 auto; padding: 20px; }
+                        .header { text-align: center; border-bottom: 2px solid #3b82f6; padding-bottom: 15px; margin-bottom: 20px; }
+                        .logo { width: 60px; height: 60px; margin: 0 auto 10px; background: #3b82f6; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; font-weight: bold; }
+                        .store-name { font-size: 24px; font-weight: bold; color: #1e40af; margin-bottom: 5px; }
+                        .row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #ddd; }
+                        .total { font-weight: bold; font-size: 16px; margin-top: 10px; padding-top: 15px; border-top: 2px solid #3b82f6; }
+                        .footer { text-align: center; margin-top: 30px; padding-top: 15px; border-top: 1px solid #ddd; font-size: 12px; color: #666; }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <div class="logo">H</div>
+                        <div class="store-name">HinziStore</div>
+                        <div>Pusat Top Up Terpercaya</div>
+                    </div>
+                    
+                    <div class="row">
+                        <span>Tanggal:</span>
+                        <span>${selectedTransaction.tanggal}</span>
+                    </div>
+                    <div class="row">
+                        <span>No HP:</span>
+                        <span>${selectedTransaction.nohp}</span>
+                    </div>
+                    <div class="row">
+                        <span>Produk:</span>
+                        <span>${selectedTransaction.deskripsi}</span>
+                    </div>
+                    <div class="row total">
+                        <span>Total Bayar:</span>
+                        <span>Rp ${selectedTransaction.nominal.toLocaleString(
+                          "id-ID"
+                        )}</span>
+                    </div>
+                    
+                    <div class="footer">
+                        <p><strong>Terima kasih atas kepercayaan Anda!</strong></p>
+                        <p>HinziStore - Solusi Top Up Terbaik</p>
+                    </div>
+                </body>
+                </html>
+            `);
+        notaWindow.document.close();
+      }
+
+      // Refresh data
+      function refreshData() {
+        document.getElementById("loading").classList.remove("hidden");
+        document.getElementById("tableContainer").classList.add("hidden");
+        loadTransactions();
+      }
+
+      // Show message
+      function showMessage(type) {
+        const container = document.getElementById("messageContainer");
+        const successMsg = document.getElementById("successMessage");
+        const errorMsg = document.getElementById("errorMessage");
+
+        container.classList.remove("hidden");
+
+        if (type === "success") {
+          successMsg.classList.remove("hidden");
+          errorMsg.classList.add("hidden");
+        } else {
+          errorMsg.classList.remove("hidden");
+          successMsg.classList.add("hidden");
+        }
+
+        setTimeout(() => {
+          container.classList.add("hidden");
+        }, 3000);
+      }
+
+      // Initialize
+      loadTransactions();
+    </script>
+  </body>
+</html>
