@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nota Transaksi - Zahira Shop</title>
+    <link rel="icon" href="logo.jpg" type="image/png" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        margin: 0;
+      }
+
+      .nota-container {
+        background: white;
+        width: 100%;
+        max-width: 400px;
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        position: relative;
+      }
+
+      .header {
+        text-align: center;
+        border-bottom: 3px solid #3b82f6;
+        padding-bottom: 20px;
+        margin-bottom: 25px;
+      }
+
+      .logo {
+        width: 60px;
+        height: 60px;
+        margin: 0 auto 15px;
+        border-radius: 50%;
+        overflow: hidden;
+        border: 3px solid #3b82f6;
+      }
+
+      .logo img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .store-name {
+        font-size: 28px;
+        font-weight: bold;
+        color: #1e40af;
+        margin-bottom: 8px;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      .tagline {
+        color: #6b7280;
+        font-size: 14px;
+        font-style: italic;
+        margin-bottom: 10px;
+      }
+
+      .services-info {
+        color: #6b7280;
+        font-size: 11px;
+        font-style: italic;
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px solid #e5e7eb;
+        line-height: 1.4;
+      }
+
+      .transaction-details {
+        margin-bottom: 25px;
+      }
+
+      .row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px dashed #e5e7eb;
+      }
+
+      .row:last-child {
+        border-bottom: none;
+      }
+
+      .label {
+        font-weight: 600;
+        color: #374151;
+        min-width: 120px;
+      }
+
+      .value {
+        font-weight: 500;
+        color: #1f2937;
+        text-align: right;
+        flex: 1;
+        word-break: break-word;
+      }
+
+      .total-section {
+        background: linear-gradient(135deg, #3b82f6, #1e40af);
+        color: white;
+        padding: 20px;
+        border-radius: 10px;
+        margin: 20px 0;
+        text-align: center;
+      }
+
+      .total-label {
+        font-size: 14px;
+        opacity: 0.9;
+        margin-bottom: 5px;
+      }
+
+      .total-amount {
+        font-size: 24px;
+        font-weight: bold;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      }
+
+      .promo-section {
+        background: #fef3c7;
+        border: 2px dashed #f59e0b;
+        border-radius: 10px;
+        padding: 15px;
+        margin: 20px 0;
+        text-align: center;
+      }
+
+      .promo-title {
+        font-weight: bold;
+        color: #92400e;
+        margin-bottom: 10px;
+        font-size: 16px;
+      }
+
+      .promo-text {
+        color: #b45309;
+        font-size: 14px;
+        line-height: 1.5;
+      }
+
+      .footer {
+        text-align: center;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 2px solid #e5e7eb;
+      }
+
+      .thank-you {
+        font-weight: bold;
+        color: #1e40af;
+        margin-bottom: 10px;
+        font-size: 16px;
+      }
+
+      .contact-info {
+        color: #6b7280;
+        font-size: 12px;
+        line-height: 1.6;
+      }
+
+      .print-controls {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        display: flex;
+        gap: 10px;
+        z-index: 1000;
+      }
+
+      .btn {
+        padding: 12px 20px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .btn-primary {
+        background: #3b82f6;
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background: #2563eb;
+        transform: translateY(-2px);
+      }
+
+      .btn-secondary {
+        background: #6b7280;
+        color: white;
+      }
+
+      .btn-secondary:hover {
+        background: #4b5563;
+        transform: translateY(-2px);
+      }
+
+      @media print {
+        body {
+          background: white !important;
+          padding: 0;
+          min-height: auto;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+
+        .nota-container {
+          box-shadow: none;
+          border-radius: 0;
+          max-width: none;
+          width: 100%;
+          padding: 20px;
+          border: 2px solid #3b82f6;
+          margin: 0 auto;
+          background: white;
+        }
+
+        .print-controls {
+          display: none;
+        }
+
+        .total-section {
+          background: linear-gradient(135deg, #3b82f6, #1e40af) !important;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+          page-break-inside: avoid;
+        }
+
+        .promo-section {
+          background: #fef3c7 !important;
+          border: 2px dashed #f59e0b !important;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+          page-break-inside: avoid;
+        }
+
+        .header {
+          page-break-inside: avoid;
+        }
+
+        .services-info {
+          border-top: 1px solid #3b82f6 !important;
+          color: #6b7280 !important;
+        }
+
+        .footer {
+          page-break-inside: avoid;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .nota-container {
+          padding: 20px;
+          margin: 10px;
+        }
+
+        .store-name {
+          font-size: 24px;
+        }
+
+        .total-amount {
+          font-size: 20px;
+        }
+      }
+
+      /* Custom scrollbar */
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      ::-webkit-scrollbar-track {
+        background: #f1f5f9;
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 4px;
+      }
+
+      ::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Print Controls -->
+    <div class="print-controls">
+      <button class="btn btn-primary" onclick="downloadPDF()">
+        📄 Download PDF
+      </button>
+      <button class="btn btn-secondary" onclick="printNota()">🖨️ Print</button>
+      <a href="index.html" class="btn btn-secondary"> ← Kembali </a>
+    </div>
+
+    <!-- Nota Container -->
+    <div class="nota-container" id="notaContainer">
+      <!-- Header -->
+      <div class="header">
+        <div class="logo">
+          <img src="logo.jpg" alt="Zahira Shop Logo" />
+        </div>
+        <div class="store-name">Zahira Shop</div>
+        <div class="tagline">Pusat Produk Digital Terpercaya</div>
+        <div class="services-info">
+          Kami menyediakan layanan percetakan, jasa service alat elektronik,<br />
+          layanan tes psikologi digital (TesDIA)
+        </div>
+      </div>
+
+      <!-- Transaction Details -->
+      <div class="transaction-details">
+        <div class="row">
+          <span class="label">📅 Tanggal:</span>
+          <span class="value" id="tanggal">-</span>
+        </div>
+        <div class="row">
+          <span class="label">📱 NO.HP/ID:</span>
+          <span class="value" id="nohp">-</span>
+        </div>
+        <div class="row">
+          <span class="label">🎮 Produk:</span>
+          <span class="value" id="deskripsi">-</span>
+        </div>
+      </div>
+
+      <!-- Total Section -->
+      <div class="total-section">
+        <div class="total-label">Total Pembayaran</div>
+        <div class="total-amount" id="nominal">Rp 0</div>
+      </div>
+
+      <!-- Promo Section - Mudah untuk customisasi -->
+      <div class="promo-section">
+        <div class="promo-title">🎉 PROMO SPESIAL!</div>
+        <div class="promo-text">
+          <strong>Tiap Transaksi 10x</strong> Free Biaya Admin!<br />
+          <!-- <strong>Top up minimal Rp 50.000</strong> dapat bonus diamond ML!<br /> -->
+          <em>*Syarat dan ketentuan berlaku</em>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="footer">
+        <div class="thank-you">Terima kasih atas kepercayaan Anda! 🙏</div>
+        <div class="contact-info">
+          Zahira Shop - Solusi Top Up Terbaik<br />
+          WhatsApp: <strong>0878-2116-7882</strong><br />
+          Alamat:
+          <strong>Warung Bapung Andir</strong> Napel, Cisalak, Kec. Cimanggu,
+          Kabupaten Cilacap, Jawa Tengah 53256<br />
+          <em>Buka 06.00 - 22.00 WIB</em>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Ambil parameter dari URL
+      function getURLParams() {
+        const params = new URLSearchParams(window.location.search);
+        return {
+          tanggal: params.get("tanggal") || "-",
+          nohp: params.get("nohp") || "-",
+          deskripsi: params.get("deskripsi") || "-",
+          nominal: parseInt(params.get("nominal")) || 0,
+        };
+      }
+
+      // Isi data nota
+      function populateNota() {
+        const data = getURLParams();
+
+        document.getElementById("tanggal").textContent = data.tanggal;
+        document.getElementById("nohp").textContent = data.nohp;
+        document.getElementById("deskripsi").textContent = data.deskripsi;
+        document.getElementById(
+          "nominal"
+        ).textContent = `Rp ${data.nominal.toLocaleString("id-ID")}`;
+
+        // Update title
+        document.title = `Nota ${data.nohp} - Zahira Shop`;
+      }
+
+      // Print nota dengan kualitas tinggi
+      function printNota() {
+        // Set print-specific styles sebelum print
+        const style = document.createElement("style");
+        style.textContent = `
+          @media print {
+            body {
+              -webkit-print-color-adjust: exact !important;
+              color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            .nota-container {
+              border: 2px solid #3b82f6 !important;
+              box-shadow: none !important;
+            }
+            .total-section {
+              background: linear-gradient(135deg, #3b82f6, #1e40af) !important;
+              -webkit-print-color-adjust: exact !important;
+            }
+            .promo-section {
+              background: #fef3c7 !important;
+              border: 2px dashed #f59e0b !important;
+              -webkit-print-color-adjust: exact !important;
+            }
+            .services-info {
+              border-top: 1px solid #3b82f6 !important;
+              color: #6b7280 !important;
+            }
+          }
+        `;
+        document.head.appendChild(style);
+
+        window.print();
+
+        // Remove style setelah print
+        setTimeout(() => {
+          if (style.parentNode) {
+            style.parentNode.removeChild(style);
+          }
+        }, 1000);
+      }
+
+      // Download PDF dengan nama No HP dan kualitas tinggi
+      function downloadPDF() {
+        const data = getURLParams();
+        const { jsPDF } = window.jspdf;
+
+        // Buat PDF dengan kualitas tinggi
+        const pdf = new jsPDF({
+          orientation: "portrait",
+          unit: "mm",
+          format: "a4",
+          compress: false, // Tidak compress untuk kualitas lebih baik
+        });
+
+        // Set font dan kualitas
+        pdf.setFont("helvetica", "normal");
+
+        // Background putih untuk memastikan kontras
+        pdf.setFillColor(255, 255, 255);
+        pdf.rect(0, 0, 210, 297, "F");
+
+        // Header dengan logo placeholder
+        pdf.setFontSize(24);
+        pdf.setTextColor(30, 64, 175);
+        pdf.setFont("helvetica", "bold");
+        pdf.text("Zahira Shop", 105, 30, { align: "center" });
+
+        pdf.setFontSize(14);
+        pdf.setTextColor(107, 114, 128);
+        pdf.setFont("helvetica", "normal");
+        pdf.text("Pusat Produk Digital Terpercaya", 105, 42, {
+          align: "center",
+        });
+
+        // Garis pembatas yang lebih tebal
+        pdf.setLineWidth(2);
+        pdf.setDrawColor(59, 130, 246);
+        pdf.line(15, 50, 195, 50);
+
+        // Layanan tambahan di bawah garis biru
+        pdf.setFontSize(11);
+        pdf.setTextColor(107, 114, 128);
+        pdf.setFont("helvetica", "italic");
+        pdf.text(
+          "Kami menyediakan layanan percetakan, jasa service alat elektronik,",
+          105,
+          58,
+          {
+            align: "center",
+          }
+        );
+        pdf.text("layanan tes psikologi digital (TesDIA)", 105, 65, {
+          align: "center",
+        });
+
+        // Transaction details dengan spacing yang lebih baik
+        pdf.setFontSize(13);
+        pdf.setTextColor(0, 0, 0);
+        pdf.setFont("helvetica", "normal");
+
+        // Format data dengan alignment yang lebih rapi - adjusted Y position
+        const startY = 85; // Moved down to accommodate services text
+        const lineHeight = 18;
+
+        // Tanggal
+        pdf.setFont("helvetica", "bold");
+        pdf.text("📅 Tanggal:", 20, startY);
+        pdf.setFont("helvetica", "normal");
+        pdf.text(data.tanggal, 65, startY);
+
+        // NO.HP/ID
+        pdf.setFont("helvetica", "bold");
+        pdf.text("📱 NO.HP/ID:", 20, startY + lineHeight);
+        pdf.setFont("helvetica", "normal");
+        pdf.text(data.nohp, 65, startY + lineHeight);
+
+        // Produk
+        pdf.setFont("helvetica", "bold");
+        pdf.text("🎮 Produk:", 20, startY + lineHeight * 2);
+        pdf.setFont("helvetica", "normal");
+        pdf.text(data.deskripsi, 65, startY + lineHeight * 2);
+
+        // Garis pembatas sebelum total
+        pdf.setLineWidth(1);
+        pdf.setDrawColor(200, 200, 200);
+        pdf.line(20, startY + lineHeight * 2.8, 190, startY + lineHeight * 2.8);
+
+        // Total dengan background biru
+        const totalY = startY + lineHeight * 3.5;
+        pdf.setFillColor(59, 130, 246);
+        pdf.roundedRect(20, totalY - 8, 170, 25, 3, 3, "F");
+
+        pdf.setFontSize(16);
+        pdf.setTextColor(255, 255, 255);
+        pdf.setFont("helvetica", "bold");
+        pdf.text("Total Pembayaran:", 105, totalY + 2, { align: "center" });
+
+        pdf.setFontSize(20);
+        pdf.text(
+          `Rp ${data.nominal.toLocaleString("id-ID")}`,
+          105,
+          totalY + 12,
+          {
+            align: "center",
+          }
+        );
+
+        // Promo section dengan background kuning
+        const promoY = totalY + 35;
+        pdf.setFillColor(254, 243, 199);
+        pdf.setDrawColor(245, 158, 11);
+        pdf.setLineWidth(1);
+        pdf.roundedRect(20, promoY - 5, 170, 30, 3, 3, "FD");
+
+        pdf.setFontSize(14);
+        pdf.setTextColor(146, 64, 14);
+        pdf.setFont("helvetica", "bold");
+        pdf.text("🎉 PROMO SPESIAL!", 105, promoY + 5, { align: "center" });
+
+        pdf.setFontSize(11);
+        pdf.setFont("helvetica", "normal");
+        pdf.text("Tiap Transaksi 10x Free Biaya Admin!", 105, promoY + 12, {
+          align: "center",
+        });
+        pdf.text("*Syarat dan ketentuan berlaku", 105, promoY + 18, {
+          align: "center",
+        });
+
+        // Footer dengan informasi kontak
+        const footerY = promoY + 45;
+        pdf.setFontSize(12);
+        pdf.setTextColor(30, 64, 175);
+        pdf.setFont("helvetica", "bold");
+        pdf.text("Terima kasih atas kepercayaan Anda! 🙏", 105, footerY, {
+          align: "center",
+        });
+
+        pdf.setFontSize(10);
+        pdf.setTextColor(107, 114, 128);
+        pdf.setFont("helvetica", "normal");
+        pdf.text("Zahira Shop - Solusi Top Up Terbaik", 105, footerY + 8, {
+          align: "center",
+        });
+        pdf.text("WhatsApp: 0878-2116-7882", 105, footerY + 15, {
+          align: "center",
+        });
+        pdf.text(
+          "Alamat: Warung Bapung Andir, Napel, Cisalak, Kec. Cimanggu, Kabupaten Cilacap, Jawa Tengah 53256",
+          105,
+          footerY + 22,
+          {
+            align: "center",
+          }
+        );
+        pdf.text("Buka 06.00 - 22.00 WIB", 105, footerY + 29, {
+          align: "center",
+        });
+        // Download with filename based on phone number
+        const filename = `${data.nohp}-Nota.pdf`;
+        pdf.save(filename);
+      }
+
+      // Initialize
+      document.addEventListener("DOMContentLoaded", function () {
+        populateNota();
+      });
+
+      // Keyboard shortcuts
+      document.addEventListener("keydown", function (e) {
+        if (e.ctrlKey && e.key === "p") {
+          e.preventDefault();
+          printNota();
+        }
+        if (e.ctrlKey && e.key === "s") {
+          e.preventDefault();
+          downloadPDF();
+        }
+      });
+
+      // Auto focus and smooth animations
+      window.addEventListener("load", function () {
+        document.querySelector(".nota-container").style.animation =
+          "slideIn 0.5s ease-out";
+      });
+
+      // Add CSS animation
+      const style = document.createElement("style");
+      style.textContent = `
+            @keyframes slideIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(30px) scale(0.95);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0) scale(1);
+                }
+            }
+        `;
+      document.head.appendChild(style);
+    </script>
+  </body>
+</html>
