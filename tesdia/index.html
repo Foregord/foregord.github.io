@@ -372,8 +372,162 @@
         </div>
       </div>
     </div>
+    <!-- Floating Navigation -->
+    <div id="floatingNav" class="fixed bottom-6 right-6 z-50">
+      <!-- Main Menu Button -->
+      <button
+        id="menuToggle"
+        class="w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-300 transform hover:scale-110"
+        onclick="toggleMenu()"
+      >
+        <img
+          src="https://img.icons8.com/ios-filled/24/ffffff/option.png"
+          alt="Menu"
+          class="w-6 h-6"
+          id="menuIcon"
+        />
+      </button>
 
+      <!-- Navigation Items -->
+      <div
+        id="navItems"
+        class="absolute bottom-16 right-0 flex flex-col gap-3 opacity-0 pointer-events-none transition-all duration-300 transform scale-75"
+      >
+        <button
+          class="w-12 h-12 bg-green-600 hover:bg-green-700 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-200 transform hover:scale-110"
+          onclick="navigateToHome()"
+          title="Home"
+        >
+          <img
+            src="https://img.icons8.com/ios-filled/20/ffffff/home.png"
+            alt="Home"
+            class="w-5 h-5"
+          />
+        </button>
+
+        <button
+          class="w-12 h-12 bg-yellow-600 hover:bg-yellow-700 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-200 transform hover:scale-110"
+          onclick="navigateToFinance()"
+          title="Finance Document"
+        >
+          <img
+            src="https://img.icons8.com/ios-glyphs/30/finance-medal.png"
+            alt="Finance"
+            class="w-5 h-5"
+          />
+        </button>
+
+        <button
+          class="w-12 h-12 bg-purple-600 hover:bg-purple-700 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-200 transform hover:scale-110"
+          onclick="navigateToCustomer()"
+          title="Customer Data"
+        >
+          <img
+            width="32"
+            height="32"
+            src="https://img.icons8.com/external-solidglyph-m-oki-orlando/32/external-customer-data-customer-relationship-management-solid-solidglyph-m-oki-orlando.png"
+            alt="external-customer-data-customer-relationship-management-solid-solidglyph-m-oki-orlando"
+          />
+        </button>
+
+        <button
+          class="w-12 h-12 bg-red-600 hover:bg-red-700 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-200 transform hover:scale-110"
+          onclick="navigateToDebt()"
+          title="Debt"
+        >
+          <img
+            src="https://img.icons8.com/ios-filled/20/ffffff/debt.png"
+            alt="Debt"
+            class="w-5 h-5"
+          />
+        </button>
+      </div>
+    </div>
+
+    <div
+      id="navOverlay"
+      class="fixed inset-0 z-40 hidden"
+      onclick="closeMenu()"
+    ></div>
     <script>
+      let isMenuOpen = false;
+
+      function toggleMenu() {
+        const navItems = document.getElementById("navItems");
+        const menuIcon = document.getElementById("menuIcon");
+        const overlay = document.getElementById("navOverlay");
+
+        isMenuOpen = !isMenuOpen;
+
+        if (isMenuOpen) {
+          // Show menu
+          navItems.classList.remove(
+            "opacity-0",
+            "pointer-events-none",
+            "scale-75"
+          );
+          navItems.classList.add(
+            "opacity-100",
+            "pointer-events-auto",
+            "scale-100"
+          );
+          menuIcon.style.transform = "rotate(45deg)";
+          overlay.classList.remove("hidden");
+        } else {
+          // Hide menu
+          navItems.classList.add(
+            "opacity-0",
+            "pointer-events-none",
+            "scale-75"
+          );
+          navItems.classList.remove(
+            "opacity-100",
+            "pointer-events-auto",
+            "scale-100"
+          );
+          menuIcon.style.transform = "rotate(0deg)";
+          overlay.classList.add("hidden");
+        }
+      }
+
+      function closeMenu() {
+        if (isMenuOpen) {
+          toggleMenu();
+        }
+      }
+      // Navigation functions
+      function navigateToHome() {
+        console.log("Navigate to Home");
+        window.location.href = "index.html";
+        closeMenu();
+      }
+
+      function navigateToFinance() {
+        console.log("Navigate to Finance Document");
+        window.location.href = "finance.html";
+        closeMenu();
+      }
+
+      function navigateToCustomer() {
+        console.log("Navigate to Customer Data");
+        window.location.href = "customer.html";
+        closeMenu();
+      }
+
+      function navigateToDebt() {
+        console.log("Navigate to Debt");
+        window.location.href = "hutang-piutang.html";
+        closeMenu();
+      }
+      
+
+      // Close menu when clicking outside
+      document.addEventListener("click", function (event) {
+        const floatingNav = document.getElementById("floatingNav");
+        if (isMenuOpen && !floatingNav.contains(event.target)) {
+          closeMenu();
+        }
+      });
       const APPS_SCRIPT_URL =
         "https://script.google.com/macros/s/AKfycbwnwHBtoiPCK1NNtCjhry8p53tm2SyP-RxXyDgX8W7x2t23pkr21kPWPz1QjkSg2Exejg/exec";
 

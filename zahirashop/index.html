@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Zahira Shop - Pencatatan Transaksi</title>
+    <link rel="icon" href="logo.jpg" type="image/png" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#3b82f6",
+              secondary: "#1e40af",
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      .gradient-bg {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      }
+      @media print {
+        .no-print {
+          display: none !important;
+        }
+        body {
+          background: white !important;
+        }
+      }
+    </style>
+  </head>
+  <body class="bg-gray-100 min-h-screen">
+    <!-- Header -->
+    <div class="gradient-bg text-white p-6 mb-8">
+      <div class="max-w-6xl mx-auto flex items-center justify-between">
+        <div class="flex items-center space-x-4">
+          <img
+            src="logo.jpg"
+            alt="Zahira Shop"
+            class="w-12 h-12 rounded-lg"
+          />
+          <div>
+            <h1 class="text-2xl font-bold">Zahira Shop</h1>
+            <p class="text-blue-100">Sistem Pencatatan Transaksi</p>
+          </div>
+        </div>
+        <button
+          onclick="window.print()"
+          class="no-print bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-colors"
+        >
+          🖨️ Cetak Laporan
+        </button>
+      </div>
+    </div>
+
+    <div class="max-w-6xl mx-auto px-4 space-y-8">
+      <!-- FORM INPUT -->
+      <div class="bg-white rounded-lg shadow-lg p-6">
+        <h2 class="text-xl font-bold text-gray-800 mb-6 border-b pb-3">
+          📝 FORM INPUT TRANSAKSI
+        </h2>
+
+        <form
+          id="transactionForm"
+          class="grid grid-cols-1 md:grid-cols-4 gap-4"
+        >
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >No HP</label
+            >
+            <input
+              type="tel"
+              name="nohp"
+              required
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="08123456789"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Deskripsi</label
+            >
+            <input
+              type="text"
+              name="deskripsi"
+              required
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Pulsa 10K, ML Diamond, dll"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Harga (Rp)</label
+            >
+            <input
+              type="number"
+              name="harga"
+              required
+              min="1"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="15000"
+            />
+          </div>
+
+          <div class="flex items-end">
+            <button
+              type="submit"
+              class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md transition-colors font-medium"
+            >
+              💾 Simpan
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- DATA TRANSAKSI -->
+      <div class="bg-white rounded-lg shadow-lg p-6">
+        <div class="flex justify-between items-center mb-6 border-b pb-3">
+          <h2 class="text-xl font-bold text-gray-800">📊 DATA TRANSAKSI</h2>
+          <div class="flex space-x-2">
+            <button
+              onclick="cetakNota()"
+              id="notaBtn"
+              class="no-print bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md transition-colors font-medium"
+              disabled
+            >
+              🧾 Cetak Nota
+            </button>
+            <button
+              onclick="refreshData()"
+              class="no-print bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition-colors"
+            >
+              🔄 Refresh
+            </button>
+          </div>
+        </div>
+
+        <!-- Loading -->
+        <div id="loading" class="text-center py-8">
+          <div
+            class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"
+          ></div>
+          <p class="mt-2 text-gray-600">Memuat data...</p>
+        </div>
+
+        <!-- Tabel Transaksi -->
+        <div id="tableContainer" class="hidden overflow-x-auto">
+          <table class="w-full border-collapse border border-gray-300">
+            <thead>
+              <tr class="bg-gray-50">
+                <th class="border border-gray-300 px-4 py-2 text-left">#</th>
+                <th class="border border-gray-300 px-4 py-2 text-left">
+                  Tanggal
+                </th>
+                <th class="border border-gray-300 px-4 py-2 text-left">
+                  No HP
+                </th>
+                <th class="border border-gray-300 px-4 py-2 text-left">
+                  Deskripsi
+                </th>
+                <th class="border border-gray-300 px-4 py-2 text-right">
+                  Harga
+                </th>
+                <th
+                  class="border border-gray-300 px-4 py-2 text-center no-print"
+                >
+                  Aksi
+                </th>
+              </tr>
+            </thead>
+            <tbody id="transactionTable">
+              <!-- Data akan dimuat di sini -->
+            </tbody>
+            <tfoot>
+              <tr class="bg-blue-50 font-bold">
+                <td
+                  colspan="4"
+                  class="border border-gray-300 px-4 py-2 text-right"
+                >
+                  Total Penjualan:
+                </td>
+                <td
+                  id="totalSales"
+                  class="border border-gray-300 px-4 py-2 text-right"
+                >
+                  Rp 0
+                </td>
+                <td class="border border-gray-300 px-4 py-2 no-print"></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Success/Error Messages -->
+    <div id="messageContainer" class="fixed top-4 right-4 z-50 hidden">
+      <div
+        id="successMessage"
+        class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg hidden"
+      >
+        ✅ Transaksi berhasil disimpan!
+      </div>
+      <div
+        id="errorMessage"
+        class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg hidden"
+      >
+        ❌ Gagal menyimpan transaksi!
+      </div>
+    </div>
+
+    <script>
+      // ⚠️ GANTI URL INI DENGAN WEB APP URL KAMU!
+      const scriptURL =
+        "https://script.google.com/macros/s/AKfycbxgf-rZCCWbvoy2OR6st1E5h1r695mHYYMO4UVSTbsGiaE3sIUjYKlaFpD675wv9Lqp0Q/exec";
+
+      // Development mode - untuk testing tanpa Google Apps Script
+      const DEVELOPMENT_MODE = false; // Set true untuk testing offline
+
+      let transactionData = [];
+      let selectedTransaction = null;
+      let lastLoadTime = 0;
+      const CACHE_DURATION = 10000; // 10 detik cache
+
+      // Mock data untuk development/testing
+      const mockTransactions = [
+        {
+          tanggal: "03/08/2025 10:30",
+          nohp: "087821167882",
+          deskripsi: "Pulsa 10K",
+          nominal: 12000,
+        },
+        {
+          tanggal: "03/08/2025 11:15",
+          nohp: "081234567890",
+          deskripsi: "Mobile Legends 86 Diamond",
+          nominal: 25000,
+        },
+        {
+          tanggal: "03/08/2025 12:00",
+          nohp: "085678901234",
+          deskripsi: "Free Fire 100 Diamond",
+          nominal: 15000,
+        },
+      ];
+
+      // Form submission dengan optimasi (CORS Fix)
+      document
+        .getElementById("transactionForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const submitBtn = e.target.querySelector('button[type="submit"]');
+          const originalText = submitBtn.innerHTML;
+          submitBtn.innerHTML = "⏳ Menyimpan...";
+          submitBtn.disabled = true;
+
+          const formData = new FormData(e.target);
+          formData.append("action", "saveTransaction");
+
+          // Development mode - simulasi save
+          if (DEVELOPMENT_MODE || window.DEVELOPMENT_MODE) {
+            setTimeout(() => {
+              const newTransaction = {
+                tanggal:
+                  new Date().toLocaleDateString("id-ID") +
+                  " " +
+                  new Date().toLocaleTimeString("id-ID", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  }),
+                nohp: formData.get("nohp"),
+                deskripsi: formData.get("deskripsi"),
+                nominal: parseInt(formData.get("harga")),
+              };
+
+              transactionData.unshift(newTransaction); // Add to beginning
+              renderTable();
+              showMessage("success");
+              e.target.reset();
+
+              submitBtn.innerHTML = originalText;
+              submitBtn.disabled = false;
+            }, 1000);
+            return;
+          }
+
+          try {
+            const response = await fetch(scriptURL, {
+              method: "POST",
+              mode: "cors",
+              credentials: "omit",
+              body: formData,
+            });
+
+            const result = await response.json();
+            if (result.success) {
+              showMessage("success");
+              e.target.reset();
+
+              // Optimasi: Hanya reload jika data sudah dimuat sebelumnya
+              if (transactionData.length > 0) {
+                loadTransactions(true);
+              }
+            } else {
+              throw new Error(result.message);
+            }
+          } catch (error) {
+            console.error("Error:", error);
+
+            // Fallback: gunakan form submission biasa
+            try {
+              await submitWithForm(formData);
+              showMessage("success");
+              e.target.reset();
+              if (transactionData.length > 0) {
+                loadTransactions(true);
+              }
+            } catch (fallbackError) {
+              console.error("Fallback failed:", fallbackError);
+              showMessage("error");
+            }
+          } finally {
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+          }
+        });
+
+      // Load transactions dengan loading indicator dan cache (CORS Fix)
+      async function loadTransactions(forceRefresh = false) {
+        // Development mode - gunakan mock data
+        if (DEVELOPMENT_MODE) {
+          transactionData = mockTransactions;
+          renderTable();
+          return;
+        }
+
+        const now = Date.now();
+
+        // Gunakan cache jika masih fresh (kecuali force refresh)
+        if (
+          !forceRefresh &&
+          transactionData.length > 0 &&
+          now - lastLoadTime < CACHE_DURATION
+        ) {
+          renderTable();
+          return;
+        }
+
+        const loading = document.getElementById("loading");
+        const tableContainer = document.getElementById("tableContainer");
+
+        loading.classList.remove("hidden");
+        tableContainer.classList.add("hidden");
+
+        try {
+          // Gunakan fetch dengan mode no-cors untuk mengatasi CORS
+          const response = await fetch(
+            `${scriptURL}?action=getTransactions&_=${Date.now()}`,
+            {
+              method: "GET",
+              mode: "cors",
+              credentials: "omit",
+              redirect: "follow",
+            }
+          );
+
+          const result = await response.json();
+
+          if (result.success) {
+            transactionData = result.transactions;
+            lastLoadTime = now;
+            renderTable();
+          } else {
+            throw new Error(result.message || "Failed to load data");
+          }
+        } catch (error) {
+          console.error("Error loading transactions:", error);
+
+          // Fallback: gunakan JSONP approach
+          try {
+            await loadTransactionsJSONP();
+          } catch (jsonpError) {
+            console.error("JSONP fallback failed:", jsonpError);
+            loading.innerHTML = `
+              <div class="text-center">
+                <p class="text-red-500 mb-4">❌ CORS Error - Gagal memuat data!</p>
+                <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-4 text-left max-w-md mx-auto text-sm">
+                  <p class="font-bold">💡 Solusi:</p>
+                  <ol class="list-decimal list-inside mt-2 space-y-1">
+                    <li>Baca file <strong>SETUP-GOOGLE-APPS-SCRIPT.md</strong></li>
+                    <li>Deploy Google Apps Script sebagai Web App</li>
+                    <li>Set permission: "Anyone, even anonymous"</li>
+                    <li>Update scriptURL di index.html</li>
+                  </ol>
+                </div>
+                <div class="space-x-2">
+                  <button onclick="loadTransactions(true)" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                    🔄 Coba Lagi
+                  </button>
+                  <button onclick="enableDevelopmentMode()" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
+                    🔧 Mode Demo
+                  </button>
+                </div>
+              </div>
+            `;
+          }
+        }
+      }
+
+      // JSONP fallback untuk mengatasi CORS
+      function loadTransactionsJSONP() {
+        return new Promise((resolve, reject) => {
+          const script = document.createElement("script");
+          const callbackName =
+            "jsonp_callback_" + Math.round(100000 * Math.random());
+
+          // Cleanup function
+          const cleanup = () => {
+            document.head.removeChild(script);
+            delete window[callbackName];
+          };
+
+          // Set timeout
+          const timeout = setTimeout(() => {
+            cleanup();
+            reject(new Error("JSONP timeout"));
+          }, 10000);
+
+          // Create callback
+          window[callbackName] = (data) => {
+            clearTimeout(timeout);
+            cleanup();
+
+            if (data.success) {
+              transactionData = data.transactions;
+              lastLoadTime = Date.now();
+              renderTable();
+              resolve(data);
+            } else {
+              reject(new Error(data.message || "JSONP failed"));
+            }
+          };
+
+          // Create script tag
+          script.src = `${scriptURL}?action=getTransactions&callback=${callbackName}&_=${Date.now()}`;
+          script.onerror = () => {
+            clearTimeout(timeout);
+            cleanup();
+            reject(new Error("Script loading failed"));
+          };
+
+          document.head.appendChild(script);
+        });
+      }
+
+      // Form submission fallback menggunakan iframe
+      function submitWithForm(formData) {
+        return new Promise((resolve, reject) => {
+          const iframe = document.createElement("iframe");
+          iframe.style.display = "none";
+          iframe.name = "submitFrame";
+          document.body.appendChild(iframe);
+
+          const form = document.createElement("form");
+          form.method = "POST";
+          form.action = scriptURL;
+          form.target = "submitFrame";
+
+          // Add form data
+          for (let [key, value] of formData.entries()) {
+            const input = document.createElement("input");
+            input.type = "hidden";
+            input.name = key;
+            input.value = value;
+            form.appendChild(input);
+          }
+
+          document.body.appendChild(form);
+
+          // Listen for iframe load
+          iframe.onload = () => {
+            setTimeout(() => {
+              document.body.removeChild(iframe);
+              document.body.removeChild(form);
+              resolve();
+            }, 1000);
+          };
+
+          iframe.onerror = () => {
+            document.body.removeChild(iframe);
+            document.body.removeChild(form);
+            reject(new Error("Form submission failed"));
+          };
+
+          form.submit();
+        });
+      }
+
+      // Enable development mode untuk demo
+      function enableDevelopmentMode() {
+        if (confirm("Aktifkan mode demo dengan data contoh?")) {
+          window.DEVELOPMENT_MODE = true;
+          transactionData = mockTransactions;
+          renderTable();
+
+          // Show notification
+          const notification = document.createElement("div");
+          notification.className =
+            "fixed top-20 right-4 bg-blue-500 text-white px-4 py-3 rounded-lg z-50";
+          notification.innerHTML =
+            "🔧 Mode Demo Aktif - Menggunakan data contoh";
+          document.body.appendChild(notification);
+
+          setTimeout(() => {
+            if (notification.parentNode) {
+              notification.parentNode.removeChild(notification);
+            }
+          }, 3000);
+        }
+      }
+
+      // Render table dengan optimasi
+      function renderTable() {
+        const tableBody = document.getElementById("transactionTable");
+        const loading = document.getElementById("loading");
+        const tableContainer = document.getElementById("tableContainer");
+        const totalSales = document.getElementById("totalSales");
+
+        if (transactionData.length === 0) {
+          tableBody.innerHTML =
+            '<tr><td colspan="6" class="border border-gray-300 px-4 py-8 text-center text-gray-500">Belum ada data transaksi</td></tr>';
+        } else {
+          let total = 0;
+          const rows = [];
+
+          // Optimasi: Bangun semua HTML sekaligus
+          transactionData.forEach((item, index) => {
+            total += item.nominal;
+            rows.push(`
+              <tr class="hover:bg-gray-50" data-index="${index}">
+                <td class="border border-gray-300 px-4 py-2">${index + 1}</td>
+                <td class="border border-gray-300 px-4 py-2">${
+                  item.tanggal
+                }</td>
+                <td class="border border-gray-300 px-4 py-2">${item.nohp}</td>
+                <td class="border border-gray-300 px-4 py-2">${
+                  item.deskripsi
+                }</td>
+                <td class="border border-gray-300 px-4 py-2 text-right">Rp ${item.nominal.toLocaleString(
+                  "id-ID"
+                )}</td>
+                <td class="border border-gray-300 px-4 py-2 text-center no-print">
+                  <button onclick="selectForNota(${index})" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm">
+                    Pilih
+                  </button>
+                </td>
+              </tr>
+            `);
+          });
+
+          tableBody.innerHTML = rows.join("");
+          totalSales.textContent = `Rp ${total.toLocaleString("id-ID")}`;
+        }
+
+        loading.classList.add("hidden");
+        tableContainer.classList.remove("hidden");
+      }
+
+      // Select transaction for nota
+      function selectForNota(index) {
+        selectedTransaction = transactionData[index];
+        document.getElementById("notaBtn").disabled = false;
+
+        // Highlight selected row
+        document.querySelectorAll("#transactionTable tr").forEach((row, i) => {
+          if (i === index) {
+            row.classList.add("bg-blue-100");
+          } else {
+            row.classList.remove("bg-blue-100");
+          }
+        });
+      }
+
+      // Cetak nota dengan file terpisah
+      function cetakNota() {
+        if (!selectedTransaction) {
+          alert("Silakan pilih transaksi terlebih dahulu");
+          return;
+        }
+
+        // Buka nota.html dengan parameter
+        const params = new URLSearchParams({
+          tanggal: selectedTransaction.tanggal,
+          nohp: selectedTransaction.nohp,
+          deskripsi: selectedTransaction.deskripsi,
+          nominal: selectedTransaction.nominal,
+        });
+
+        window.open(`nota.html?${params}`, "_blank");
+      }
+
+      // Refresh data dengan debouncing
+      let refreshTimeout;
+      function refreshData() {
+        if (refreshTimeout) clearTimeout(refreshTimeout);
+
+        const refreshBtn = document.querySelector(
+          'button[onclick="refreshData()"]'
+        );
+        refreshBtn.innerHTML = "🔄 Loading...";
+        refreshBtn.disabled = true;
+
+        refreshTimeout = setTimeout(() => {
+          document.getElementById("loading").classList.remove("hidden");
+          document.getElementById("tableContainer").classList.add("hidden");
+
+          loadTransactions(true).finally(() => {
+            refreshBtn.innerHTML = "🔄 Refresh";
+            refreshBtn.disabled = false;
+          });
+        }, 300);
+      }
+
+      // Show message
+      function showMessage(type) {
+        const container = document.getElementById("messageContainer");
+        const successMsg = document.getElementById("successMessage");
+        const errorMsg = document.getElementById("errorMessage");
+
+        container.classList.remove("hidden");
+
+        if (type === "success") {
+          successMsg.classList.remove("hidden");
+          errorMsg.classList.add("hidden");
+        } else {
+          errorMsg.classList.remove("hidden");
+          successMsg.classList.add("hidden");
+        }
+
+        setTimeout(() => {
+          container.classList.add("hidden");
+        }, 3000);
+      }
+
+      // Initialize
+      loadTransactions();
+    </script>
+  </body>
+</html>

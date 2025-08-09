@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="icon"
+      type="image/x-icon"
+      href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💰</text></svg>"
+    />
+    <title>TESDIA FINANCE MANAGER</title>
+    <!-- Meta untuk mencegah indexing Google -->
+    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet" />
+    <meta name="googlebot" content="noindex, nofollow" />
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      .gradient-bg {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      }
+
+      .gradient-primary {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      }
+
+      .gradient-success {
+        background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+      }
+
+      .gradient-danger {
+        background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+      }
+
+      .gradient-warning {
+        background: linear-gradient(135deg, #f7971e 0%, #ffd200 100%);
+      }
+
+      .glass {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+
+      .sync-indicator {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1000;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+        color: white;
+        transition: all 0.3s ease;
+      }
+
+      .sync-indicator.syncing {
+        background: #3b82f6;
+        animation: pulse 2s infinite;
+      }
+
+      .sync-indicator.success {
+        background: #10b981;
+      }
+
+      .sync-indicator.error {
+        background: #ef4444;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.5;
+        }
+      }
+
+      .currency-input {
+        position: relative;
+      }
+
+      .currency-input::before {
+        content: "Rp";
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6b7280;
+        font-weight: 500;
+      }
+
+      .currency-input input {
+        padding-left: 40px;
+      }
+    </style>
+  </head>
+  <body class="gradient-bg min-h-screen">
+    <!-- Sync Indicator -->
+    <div id="syncIndicator" class="sync-indicator hidden">
+      <span id="syncText">🔄 Syncing...</span>
+    </div>
+
+    <div class="container mx-auto px-4 py-6 max-w-7xl">
+      <!-- Header -->
+      <div
+        class="gradient-primary rounded-2xl p-6 mb-6 text-center text-white shadow-2xl"
+      >
+        <img
+          src="https://tesdia.id/wp-content/uploads/2023/03/cropped-hanya-logo-DIA.webp"
+          alt="Logo Tesdia"
+          class="mx-auto mb-4 w-24 h-24 rounded-full shadow-lg"
+        />
+        <h1 class="text-3xl md:text-4xl font-bold mb-2">
+          Tesdia Finance Manager
+        </h1>
+        <p class="text-lg opacity-90">Pencatatan Keuangan Bandung</p>
+        <div class="text-sm opacity-90 mt-2">
+          <span id="connectionStatus">🔄 Loading...</span> | Last sync:
+          <span id="lastSyncTime">-</span>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Form Section -->
+        <div class="bg-white rounded-2xl p-6 shadow-2xl">
+          <h2
+            class="text-2xl font-bold text-gray-800 mb-6 border-b-4 border-primary pb-3"
+          >
+            📝 Input Transaksi Keuangan
+          </h2>
+
+          <!-- Messages -->
+          <div
+            id="successMessage"
+            class="hidden bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg mb-4"
+          >
+            <span class="font-medium">✅ Transaksi berhasil disimpan!</span>
+          </div>
+          <div
+            id="errorMessage"
+            class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-4"
+          >
+            <span class="font-medium"
+              >❌ Mohon lengkapi semua field yang diperlukan!</span
+            >
+          </div>
+          <div
+            id="loadingMessage"
+            class="hidden bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded-lg mb-4"
+          >
+            <span class="font-medium"
+              >⏳ Menyimpan data ke Google Sheets...</span
+            >
+          </div>
+
+          <form id="financeForm" class="space-y-4">
+            <!-- Tanggal -->
+            <div>
+              <label
+                for="tanggal"
+                class="block text-sm font-semibold text-gray-700 mb-2"
+              >
+                📅 Tanggal Transaksi *
+              </label>
+              <input
+                type="date"
+                id="tanggal"
+                name="tanggal"
+                required
+                class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200"
+              />
+            </div>
+
+            <!-- Kategori Transaksi -->
+            <div>
+              <label
+                for="kategori"
+                class="block text-sm font-semibold text-gray-700 mb-2"
+              >
+                📊 Kategori Transaksi *
+              </label>
+              <select
+                id="kategori"
+                name="kategori"
+                required
+                class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200"
+              >
+                <option value="">Pilih kategori</option>
+                <option value="Pemasukan">💰 Pemasukan</option>
+                <option value="Pengeluaran">💸 Pengeluaran</option>
+              </select>
+            </div>
+
+            <!-- Jumlah -->
+            <div>
+              <label
+                for="jumlah"
+                class="block text-sm font-semibold text-gray-700 mb-2"
+              >
+                💵 Jumlah *
+              </label>
+              <div class="currency-input">
+                <input
+                  type="number"
+                  id="jumlah"
+                  name="jumlah"
+                  required
+                  min="0"
+                  step="1000"
+                  placeholder="0"
+                  class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200"
+                />
+              </div>
+            </div>
+
+            <!-- Metode Pembayaran -->
+            <div>
+              <label
+                for="metode"
+                class="block text-sm font-semibold text-gray-700 mb-2"
+              >
+                💳 Metode Pembayaran *
+              </label>
+              <select
+                id="metode"
+                name="metode"
+                required
+                class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200"
+              >
+                <option value="">Pilih metode</option>
+                <option value="Tunai">💵 Tunai</option>
+                <option value="Transfer Bank">🏦 Transfer Bank</option>
+                <option value="E-Wallet">📱 E-Wallet (OVO, GoPay, DANA)</option>
+                <option value="Kartu Kredit">💳 Kartu Kredit</option>
+                <option value="Kartu Debit">💳 Kartu Debit</option>
+              </select>
+            </div>
+
+            <!-- Keterangan -->
+            <div>
+              <label
+                for="keterangan"
+                class="block text-sm font-semibold text-gray-700 mb-2"
+              >
+                📝 Keterangan *
+              </label>
+              <textarea
+                id="keterangan"
+                name="keterangan"
+                required
+                rows="3"
+                placeholder="Masukkan keterangan transaksi..."
+                class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 resize-none"
+              ></textarea>
+            </div>
+
+            <!-- Sumber Dana -->
+            <div>
+              <label
+                for="sumber"
+                class="block text-sm font-semibold text-gray-700 mb-2"
+              >
+                🏛️ Sumber Dana
+              </label>
+              <select
+                id="sumber"
+                name="sumber"
+                class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200"
+              >
+                <option value="">Pilih sumber dana</option>
+                <option value="Kas Kantor">🏢 Kas Kantor</option>
+                <option value="Donasi">🤝 Donasi</option>
+                <option value="Sponsor">🎯 Sponsor</option>
+                <option value="Penjualan">💼 Penjualan</option>
+                <option value="Operasional">⚙️ Operasional</option>
+                <option value="Lain-lain">📦 Lain-lain</option>
+              </select>
+            </div>
+
+            <!-- Buttons -->
+            <div class="flex flex-col sm:flex-row gap-3 pt-4">
+              <button
+                type="submit"
+                class="gradient-primary text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transform hover:-translate-y-1 transition-all duration-200 flex items-center justify-center gap-2"
+              >
+                <span>💾</span>
+                Simpan Transaksi
+              </button>
+              <button
+                type="button"
+                onclick="clearForm()"
+                class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transform hover:-translate-y-1 transition-all duration-200 flex items-center justify-center gap-2"
+              >
+                <span>🗑️</span>
+                Clear Form
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Data Section -->
+        <div class="bg-white rounded-2xl p-6 shadow-2xl">
+          <h2
+            class="text-2xl font-bold text-gray-800 mb-6 border-b-4 border-primary pb-3"
+          >
+            📊 Data Keuangan
+          </h2>
+
+          <!-- Stats Cards -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div class="gradient-success text-white p-4 rounded-lg text-center">
+              <div class="text-xl font-bold" id="totalPemasukan">Rp 0</div>
+              <div class="text-sm opacity-90">Total Pemasukan</div>
+            </div>
+            <div class="gradient-danger text-white p-4 rounded-lg text-center">
+              <div class="text-xl font-bold" id="totalPengeluaran">Rp 0</div>
+              <div class="text-sm opacity-90">Total Pengeluaran</div>
+            </div>
+            <div class="gradient-warning text-white p-4 rounded-lg text-center">
+              <div class="text-xl font-bold" id="saldoTotal">Rp 0</div>
+              <div class="text-sm opacity-90">Saldo</div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+            <button
+              onclick="exportData()"
+              class="gradient-primary text-white px-4 py-2 rounded-lg font-semibold hover:shadow-lg transform hover:-translate-y-1 transition-all duration-200 flex items-center justify-center gap-2 text-sm"
+            >
+              <span>📤</span>
+              Export
+            </button>
+            <button
+              onclick="importData()"
+              class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-semibold hover:shadow-lg transform hover:-translate-y-1 transition-all duration-200 flex items-center justify-center gap-2 text-sm"
+            >
+              <span>📥</span>
+              Import
+            </button>
+            <button
+              onclick="forceSync()"
+              class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:shadow-lg transform hover:-translate-y-1 transition-all duration-200 flex items-center justify-center gap-2 text-sm"
+            >
+              <span>🔄</span>
+              Sync
+            </button>
+            <button
+              onclick="clearAllData()"
+              class="gradient-danger text-white px-4 py-2 rounded-lg font-semibold hover:shadow-lg transform hover:-translate-y-1 transition-all duration-200 flex items-center justify-center gap-2 text-sm"
+            >
+              <span>🗑️</span>
+              Hapus
+            </button>
+          </div>
+
+          <!-- Hidden file input -->
+          <input
+            type="file"
+            id="fileInput"
+            accept=".json"
+            class="hidden"
+            onchange="handleFileImport(event)"
+          />
+
+          <!-- Data Display -->
+          <div id="dataDisplay" class="overflow-x-auto"></div>
+        </div>
+      </div>
+    </div>
+    <!-- Floating Navigation -->
+    <div id="floatingNav" class="fixed bottom-6 right-6 z-50">
+      <!-- Main Menu Button -->
+      <button
+        id="menuToggle"
+        class="w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-300 transform hover:scale-110"
+        onclick="toggleMenu()"
+      >
+        <img
+          src="https://img.icons8.com/ios-filled/24/ffffff/option.png"
+          alt="Menu"
+          class="w-6 h-6"
+          id="menuIcon"
+        />
+      </button>
+
+      <!-- Navigation Items -->
+      <div
+        id="navItems"
+        class="absolute bottom-16 right-0 flex flex-col gap-3 opacity-0 pointer-events-none transition-all duration-300 transform scale-75"
+      >
+        <button
+          class="w-12 h-12 bg-green-600 hover:bg-green-700 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-200 transform hover:scale-110"
+          onclick="navigateToHome()"
+          title="Home"
+        >
+          <img
+            src="https://img.icons8.com/ios-filled/20/ffffff/home.png"
+            alt="Home"
+            class="w-5 h-5"
+          />
+        </button>
+
+        <button
+          class="w-12 h-12 bg-yellow-600 hover:bg-yellow-700 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-200 transform hover:scale-110"
+          onclick="navigateToFinance()"
+          title="Finance Document"
+        >
+          <img
+            src="https://img.icons8.com/ios-glyphs/30/finance-medal.png"
+            alt="Finance"
+            class="w-5 h-5"
+          />
+        </button>
+
+        <button
+          class="w-12 h-12 bg-purple-600 hover:bg-purple-700 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-200 transform hover:scale-110"
+          onclick="navigateToCustomer()"
+          title="Customer Data"
+        >
+          <img
+            width="32"
+            height="32"
+            src="https://img.icons8.com/external-solidglyph-m-oki-orlando/32/external-customer-data-customer-relationship-management-solid-solidglyph-m-oki-orlando.png"
+            alt="external-customer-data-customer-relationship-management-solid-solidglyph-m-oki-orlando"
+          />
+        </button>
+
+        <button
+          class="w-12 h-12 bg-red-600 hover:bg-red-700 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-200 transform hover:scale-110"
+          onclick="navigateToDebt()"
+          title="Debt"
+        >
+          <img
+            src="https://img.icons8.com/ios-filled/20/ffffff/debt.png"
+            alt="Debt"
+            class="w-5 h-5"
+          />
+        </button>
+      </div>
+    </div>
+
+    <div
+      id="navOverlay"
+      class="fixed inset-0 z-40 hidden"
+      onclick="closeMenu()"
+    ></div>
+    <script>
+      let isMenuOpen = false;
+
+      function toggleMenu() {
+        const navItems = document.getElementById("navItems");
+        const menuIcon = document.getElementById("menuIcon");
+        const overlay = document.getElementById("navOverlay");
+
+        isMenuOpen = !isMenuOpen;
+
+        if (isMenuOpen) {
+          // Show menu
+          navItems.classList.remove(
+            "opacity-0",
+            "pointer-events-none",
+            "scale-75"
+          );
+          navItems.classList.add(
+            "opacity-100",
+            "pointer-events-auto",
+            "scale-100"
+          );
+          menuIcon.style.transform = "rotate(45deg)";
+          overlay.classList.remove("hidden");
+        } else {
+          // Hide menu
+          navItems.classList.add(
+            "opacity-0",
+            "pointer-events-none",
+            "scale-75"
+          );
+          navItems.classList.remove(
+            "opacity-100",
+            "pointer-events-auto",
+            "scale-100"
+          );
+          menuIcon.style.transform = "rotate(0deg)";
+          overlay.classList.add("hidden");
+        }
+      }
+
+      function closeMenu() {
+        if (isMenuOpen) {
+          toggleMenu();
+        }
+      }
+      // Navigation functions
+      function navigateToHome() {
+        console.log("Navigate to Home");
+        window.location.href = "index.html";
+        closeMenu();
+      }
+
+      function navigateToFinance() {
+        console.log("Navigate to Finance Document");
+        window.location.href = "finance.html";
+        closeMenu();
+      }
+
+      function navigateToCustomer() {
+        console.log("Navigate to Customer Data");
+        window.location.href = "customer.html";
+        closeMenu();
+      }
+
+      function navigateToDebt() {
+        console.log("Navigate to Debt");
+        window.location.href = "hutang-piutang.html";
+        closeMenu();
+      }
+      
+
+      // Close menu when clicking outside
+      document.addEventListener("click", function (event) {
+        const floatingNav = document.getElementById("floatingNav");
+        if (isMenuOpen && !floatingNav.contains(event.target)) {
+          closeMenu();
+        }
+      });
+      // URL Google Apps Script - sama dengan form utama
+      const APPS_SCRIPT_URL =
+        "https://script.google.com/macros/s/AKfycbwnwHBtoiPCK1NNtCjhry8p53tm2SyP-RxXyDgX8W7x2t23pkr21kPWPz1QjkSg2Exejg/exec";
+
+      let financeStore = [];
+      let isOnline = navigator.onLine;
+      let syncInterval;
+      let lastSyncTime = null;
+
+      // Set tanggal hari ini sebagai default
+      document.addEventListener("DOMContentLoaded", () => {
+        const today = new Date().toISOString().split("T")[0];
+        document.getElementById("tanggal").value = today;
+      });
+
+      // Format currency
+      function formatCurrency(amount) {
+        return new Intl.NumberFormat("id-ID", {
+          style: "currency",
+          currency: "IDR",
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0,
+        }).format(amount);
+      }
+
+      // Auto sync setiap 30 detik
+      function startAutoSync() {
+        syncInterval = setInterval(async () => {
+          if (isOnline) {
+            await syncDataFromSheets(false);
+          }
+        }, 30000);
+      }
+
+      // Stop auto sync
+      function stopAutoSync() {
+        if (syncInterval) {
+          clearInterval(syncInterval);
+        }
+      }
+
+      // Update sync indicator
+      function updateSyncIndicator(status, message) {
+        const indicator = document.getElementById("syncIndicator");
+        const text = document.getElementById("syncText");
+
+        if (indicator && text) {
+          indicator.className = "sync-indicator " + status;
+          text.textContent = message;
+
+          if (status === "syncing") {
+            indicator.classList.remove("hidden");
+          } else {
+            indicator.classList.remove("hidden");
+            setTimeout(() => {
+              indicator.classList.add("hidden");
+            }, 3000);
+          }
+        }
+      }
+
+      // Update connection status
+      function updateConnectionStatus(status) {
+        const statusElement = document.getElementById("connectionStatus");
+        const lastSyncElement = document.getElementById("lastSyncTime");
+
+        if (statusElement) statusElement.textContent = status;
+        if (lastSyncElement && lastSyncTime) {
+          lastSyncElement.textContent =
+            lastSyncTime.toLocaleTimeString("id-ID");
+        }
+      }
+
+      // Initialize app
+      document.addEventListener("DOMContentLoaded", async () => {
+        // Load data from localStorage first
+        const savedData = localStorage.getItem("tesdiaFinanceData");
+        if (savedData) {
+          try {
+            financeStore = JSON.parse(savedData);
+            updateDataDisplay();
+          } catch (e) {
+            console.warn("Error parsing saved data:", e);
+          }
+        }
+
+        // Then sync with Google Sheets
+        await syncDataFromSheets(true);
+
+        // Start auto sync
+        startAutoSync();
+      });
+
+      // Handle online/offline events
+      window.addEventListener("online", () => {
+        isOnline = true;
+        updateConnectionStatus("🟢 Online");
+        syncDataFromSheets(true);
+      });
+
+      window.addEventListener("offline", () => {
+        isOnline = false;
+        updateConnectionStatus("🔴 Offline");
+      });
+
+      // Form submission
+      document
+        .getElementById("financeForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const formData = new FormData(e.target);
+
+          const data = {
+            id: Date.now(),
+            nomer: Date.now(), // Auto-generated number
+            tanggal: formData.get("tanggal"),
+            kategori: formData.get("kategori"),
+            jumlah: parseFloat(formData.get("jumlah")),
+            metode: formData.get("metode"),
+            keterangan: formData.get("keterangan"),
+            sumber: formData.get("sumber"),
+            timestamp: new Date().toLocaleString("id-ID"),
+          };
+
+          // Validation
+          if (
+            !data.tanggal ||
+            !data.kategori ||
+            !data.jumlah ||
+            !data.metode ||
+            !data.keterangan
+          ) {
+            showMessage("errorMessage");
+            return;
+          }
+
+          showMessage("loadingMessage");
+
+          try {
+            // Save to Google Sheets if online
+            if (isOnline) {
+              await saveToGoogleSheets(data);
+            }
+
+            // Save to local storage
+            financeStore.push(data);
+            localStorage.setItem(
+              "tesdiaFinanceData",
+              JSON.stringify(financeStore)
+            );
+
+            // Update UI
+            e.target.reset();
+            // Reset tanggal ke hari ini
+            document.getElementById("tanggal").value = new Date()
+              .toISOString()
+              .split("T")[0];
+            updateDataDisplay();
+            showMessage("successMessage");
+
+            // Auto sync after save
+            if (isOnline) {
+              setTimeout(() => syncDataFromSheets(false), 2000);
+            }
+          } catch (err) {
+            console.error("Error saving data:", err);
+
+            // Still save locally even if Google Sheets fails
+            financeStore.push(data);
+            localStorage.setItem(
+              "tesdiaFinanceData",
+              JSON.stringify(financeStore)
+            );
+
+            e.target.reset();
+            document.getElementById("tanggal").value = new Date()
+              .toISOString()
+              .split("T")[0];
+            updateDataDisplay();
+            showMessage("successMessage");
+          }
+        });
+
+      // Save to Google Sheets
+      async function saveToGoogleSheets(data) {
+        // Tambahkan parameter sheet untuk menentukan sheet yang akan digunakan
+        const response = await fetch(APPS_SCRIPT_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body:
+            "data=" +
+            encodeURIComponent(JSON.stringify(data)) +
+            "&sheet=finance",
+        });
+
+        const result = await response.json();
+        if (!result.success) {
+          throw new Error(result.message || "Gagal menyimpan ke Google Sheets");
+        }
+      }
+
+      // Sync data from Google Sheets
+      async function syncDataFromSheets(showIndicator = true) {
+        try {
+          if (showIndicator) {
+            updateSyncIndicator("syncing", "🔄 Syncing with Google Sheets...");
+          }
+
+          const response = await fetch(
+            APPS_SCRIPT_URL + "?action=get&sheet=finance",
+            {
+              method: "GET",
+            }
+          );
+
+          if (response.ok) {
+            const result = await response.json();
+            if (result.success && result.data) {
+              // Merge data from Google Sheets with local data
+              const sheetsData = result.data;
+              const localIds = financeStore.map((item) => item.id);
+
+              // Add new data from sheets that's not in local
+              sheetsData.forEach((item) => {
+                if (!localIds.includes(item.id)) {
+                  financeStore.push(item);
+                }
+              });
+
+              // Update local storage
+              localStorage.setItem(
+                "tesdiaFinanceData",
+                JSON.stringify(financeStore)
+              );
+              updateDataDisplay();
+
+              lastSyncTime = new Date();
+              updateConnectionStatus("🟢 Online");
+
+              if (showIndicator) {
+                updateSyncIndicator("success", "✅ Sync successful");
+              }
+            }
+          } else {
+            throw new Error("Failed to fetch data");
+          }
+        } catch (err) {
+          console.warn("Sync error:", err);
+          updateConnectionStatus("🟡 Sync Error");
+
+          if (showIndicator) {
+            updateSyncIndicator("error", "❌ Sync failed");
+          }
+        }
+      }
+
+      // Force sync
+      async function forceSync() {
+        await syncDataFromSheets(true);
+      }
+
+      // Export data
+      function exportData() {
+        if (financeStore.length === 0) {
+          alert("Tidak ada data untuk diekspor");
+          return;
+        }
+
+        const exportData = {
+          exported_at: new Date().toISOString(),
+          total_records: financeStore.length,
+          data: financeStore,
+        };
+
+        const dataStr = JSON.stringify(exportData, null, 2);
+        const dataBlob = new Blob([dataStr], { type: "application/json" });
+        const url = URL.createObjectURL(dataBlob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `tesdia_finance_${
+          new Date().toISOString().split("T")[0]
+        }.json`;
+        link.click();
+        URL.revokeObjectURL(url);
+      }
+
+      // Import data
+      function importData() {
+        document.getElementById("fileInput").click();
+      }
+
+      // Handle file import
+      function handleFileImport(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          try {
+            const importedData = JSON.parse(e.target.result);
+            let newData = [];
+
+            // Check if it's the new export format
+            if (importedData.data && Array.isArray(importedData.data)) {
+              newData = importedData.data;
+            } else if (Array.isArray(importedData)) {
+              newData = importedData;
+            } else {
+              alert("Format file tidak valid");
+              return;
+            }
+
+            if (
+              confirm(
+                `Import ${newData.length} data? Data yang ada akan digabung dengan data baru.`
+              )
+            ) {
+              // Merge with existing data (avoid duplicates based on ID)
+              const existingIds = financeStore.map((item) => item.id);
+              const uniqueNewData = newData.filter(
+                (item) => !existingIds.includes(item.id)
+              );
+
+              financeStore = [...financeStore, ...uniqueNewData];
+              localStorage.setItem(
+                "tesdiaFinanceData",
+                JSON.stringify(financeStore)
+              );
+              updateDataDisplay();
+
+              alert(
+                `Data berhasil diimport! ${uniqueNewData.length} data baru ditambahkan.`
+              );
+            }
+          } catch (error) {
+            alert("Error membaca file: " + error.message);
+          }
+        };
+        reader.readAsText(file);
+      }
+
+      // Clear all data
+      function clearAllData() {
+        if (
+          confirm(
+            "Apakah Anda yakin ingin menghapus SEMUA data? Tindakan ini tidak dapat dibatalkan!"
+          )
+        ) {
+          financeStore = [];
+          localStorage.setItem(
+            "tesdiaFinanceData",
+            JSON.stringify(financeStore)
+          );
+          updateDataDisplay();
+        }
+      }
+
+      // Update data display
+      function updateDataDisplay() {
+        const table = document.getElementById("dataDisplay");
+
+        if (financeStore.length === 0) {
+          table.innerHTML = `<div class="text-gray-500 text-center py-8 italic">Belum ada data transaksi</div>`;
+          updateStats();
+          return;
+        }
+
+        // Sort by tanggal (newest first)
+        const sortedData = [...financeStore].sort((a, b) => {
+          const dateA = new Date(a.tanggal);
+          const dateB = new Date(b.tanggal);
+          return dateB - dateA;
+        });
+
+        const rows = sortedData.map((d, index) => {
+          const kategoriColor =
+            d.kategori === "Pemasukan"
+              ? "bg-green-100 text-green-800"
+              : "bg-red-100 text-red-800";
+
+          const kategoriIcon = d.kategori === "Pemasukan" ? "💰" : "💸";
+
+          return `
+                    <tr class="hover:bg-gray-50 transition-colors duration-200">
+                        <td class="px-2 py-2 text-xs">${index + 1}</td>
+                        <td class="px-2 py-2 text-xs">${d.tanggal}</td>
+                        <td class="px-2 py-2">
+                            <span class="inline-flex items-center px-2 py-1 text-xs rounded-full ${kategoriColor}">
+                                ${kategoriIcon} ${d.kategori}
+                            </span>
+                        </td>
+                        <td class="px-2 py-2 text-xs font-medium">${formatCurrency(
+                          d.jumlah
+                        )}</td>
+                        <td class="px-2 py-2 text-xs">${d.metode}</td>
+                        <td class="px-2 py-2 text-xs">${d.keterangan}</td>
+                        <td class="px-2 py-2 text-xs">${d.sumber || "-"}</td>
+                        <td class="px-2 py-2">
+                            <button onclick="deleteData(${
+                              d.id
+                            })" class="text-red-500 hover:text-red-700 text-xs">
+                                🗑️
+                            </button>
+                        </td>
+                    </tr>
+                `;
+        });
+
+        table.innerHTML = `
+                <div class="overflow-x-auto">
+                    <table class="min-w-full table-auto border-collapse bg-white rounded-lg overflow-hidden shadow-sm">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="px-2 py-2 text-left text-xs font-semibold text-gray-600">#</th>
+                                <th class="px-2 py-2 text-left text-xs font-semibold text-gray-600">Tanggal</th>
+                                <th class="px-2 py-2 text-left text-xs font-semibold text-gray-600">Kategori</th>
+                                <th class="px-2 py-2 text-left text-xs font-semibold text-gray-600">Jumlah</th>
+                                <th class="px-2 py-2 text-left text-xs font-semibold text-gray-600">Metode</th>
+                                <th class="px-2 py-2 text-left text-xs font-semibold text-gray-600">Keterangan</th>
+                                <th class="px-2 py-2 text-left text-xs font-semibold text-gray-600">Sumber</th>
+                                <th class="px-2 py-2 text-left text-xs font-semibold text-gray-600">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            ${rows.join("")}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+        updateStats();
+      }
+
+      // Delete individual data
+      function deleteData(id) {
+        if (confirm("Apakah Anda yakin ingin menghapus transaksi ini?")) {
+          financeStore = financeStore.filter((item) => item.id !== id);
+          localStorage.setItem(
+            "tesdiaFinanceData",
+            JSON.stringify(financeStore)
+          );
+          updateDataDisplay();
+        }
+      }
+
+      // Update statistics
+      function updateStats() {
+        const totalPemasukan = financeStore
+          .filter((d) => d.kategori === "Pemasukan")
+          .reduce((sum, d) => sum + d.jumlah, 0);
+
+        const totalPengeluaran = financeStore
+          .filter((d) => d.kategori === "Pengeluaran")
+          .reduce((sum, d) => sum + d.jumlah, 0);
+
+        const saldoTotal = totalPemasukan - totalPengeluaran;
+
+        const totalPemasukanEl = document.getElementById("totalPemasukan");
+        const totalPengeluaranEl = document.getElementById("totalPengeluaran");
+        const saldoTotalEl = document.getElementById("saldoTotal");
+
+        if (totalPemasukanEl)
+          totalPemasukanEl.textContent = formatCurrency(totalPemasukan);
+        if (totalPengeluaranEl)
+          totalPengeluaranEl.textContent = formatCurrency(totalPengeluaran);
+        if (saldoTotalEl) {
+          saldoTotalEl.textContent = formatCurrency(saldoTotal);
+          // Change color based on positive/negative
+          if (saldoTotal >= 0) {
+            saldoTotalEl.parentElement.className =
+              saldoTotalEl.parentElement.className.replace(
+                "gradient-warning",
+                "gradient-success"
+              );
+          } else {
+            saldoTotalEl.parentElement.className =
+              saldoTotalEl.parentElement.className.replace(
+                "gradient-success",
+                "gradient-danger"
+              );
+          }
+        }
+      }
+
+      // Show message
+      function showMessage(id) {
+        ["successMessage", "errorMessage", "loadingMessage"].forEach((el) => {
+          const element = document.getElementById(el);
+          if (element) element.classList.add("hidden");
+        });
+
+        const el = document.getElementById(id);
+        if (el) {
+          el.classList.remove("hidden");
+          if (id !== "loadingMessage") {
+            setTimeout(() => el.classList.add("hidden"), 3000);
+          }
+        }
+      }
+
+      // Clear form
+      function clearForm() {
+        document.getElementById("financeForm").reset();
+        document.getElementById("tanggal").value = new Date()
+          .toISOString()
+          .split("T")[0];
+      }
+
+      // Cleanup on page unload
+      window.addEventListener("beforeunload", () => {
+        stopAutoSync();
+      });
+    </script>
+  </body>
+</html>

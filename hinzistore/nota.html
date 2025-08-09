@@ -88,12 +88,15 @@
       .label {
         font-weight: 600;
         color: #374151;
+        min-width: 120px;
       }
 
       .value {
         font-weight: 500;
         color: #1f2937;
         text-align: right;
+        flex: 1;
+        word-break: break-word;
       }
 
       .total-section {
@@ -206,6 +209,9 @@
           background: white;
           padding: 0;
           min-height: auto;
+          -webkit-print-color-adjust: exact;
+          color-adjust: exact;
+          print-color-adjust: exact;
         }
 
         .nota-container {
@@ -214,10 +220,33 @@
           max-width: none;
           width: 100%;
           padding: 20px;
+          border: 2px solid #3b82f6;
+          margin: 0;
         }
 
         .print-controls {
           display: none;
+        }
+
+        .total-section {
+          background: linear-gradient(135deg, #3b82f6, #1e40af) !important;
+          -webkit-print-color-adjust: exact;
+          page-break-inside: avoid;
+        }
+
+        .promo-section {
+          background: #fef3c7 !important;
+          border: 2px dashed #f59e0b !important;
+          -webkit-print-color-adjust: exact;
+          page-break-inside: avoid;
+        }
+
+        .header {
+          page-break-inside: avoid;
+        }
+
+        .footer {
+          page-break-inside: avoid;
         }
       }
 
@@ -273,7 +302,7 @@
           <img src="logo-hinzistore.png" alt="HinziStore Logo" />
         </div>
         <div class="store-name">HinziStore</div>
-        <div class="tagline">Pusat Top Up Game & Pulsa Terpercaya</div>
+        <div class="tagline">Pusat Produk Digital</div>
       </div>
 
       <!-- Transaction Details -->
@@ -283,7 +312,7 @@
           <span class="value" id="tanggal">-</span>
         </div>
         <div class="row">
-          <span class="label">📱 No HP:</span>
+          <span class="label">📱 NO.HP/ID:</span>
           <span class="value" id="nohp">-</span>
         </div>
         <div class="row">
@@ -302,8 +331,8 @@
       <div class="promo-section">
         <div class="promo-title">🎉 PROMO SPESIAL!</div>
         <div class="promo-text">
-          <strong>Cashback 5%</strong> untuk pembelian berikutnya!<br />
-          <strong>Top up minimal Rp 50.000</strong> dapat bonus diamond ML!<br />
+          <strong>Tiap Transaksi 10x</strong> Free Biaya Admin!<br />
+          <!-- <strong>Top up minimal Rp 50.000</strong> dapat bonus diamond ML!<br /> -->
           <em>*Syarat dan ketentuan berlaku</em>
         </div>
       </div>
@@ -347,80 +376,184 @@
         document.title = `Nota ${data.nohp} - HinziStore`;
       }
 
-      // Print nota
+      // Print nota dengan kualitas tinggi
       function printNota() {
+        // Set print-specific styles sebelum print
+        const style = document.createElement("style");
+        style.textContent = `
+          @media print {
+            body {
+              -webkit-print-color-adjust: exact !important;
+              color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            .nota-container {
+              border: 2px solid #3b82f6 !important;
+              box-shadow: none !important;
+            }
+            .total-section {
+              background: linear-gradient(135deg, #3b82f6, #1e40af) !important;
+              -webkit-print-color-adjust: exact !important;
+            }
+            .promo-section {
+              background: #fef3c7 !important;
+              border: 2px dashed #f59e0b !important;
+              -webkit-print-color-adjust: exact !important;
+            }
+          }
+        `;
+        document.head.appendChild(style);
+
         window.print();
+
+        // Remove style setelah print
+        setTimeout(() => {
+          if (style.parentNode) {
+            style.parentNode.removeChild(style);
+          }
+        }, 1000);
       }
 
-      // Download PDF dengan nama No HP
+      // Download PDF dengan nama No HP dan kualitas tinggi
       function downloadPDF() {
         const data = getURLParams();
         const { jsPDF } = window.jspdf;
-        const pdf = new jsPDF();
 
-        // Set font
-        pdf.setFont("helvetica");
+        // Buat PDF dengan kualitas tinggi
+        const pdf = new jsPDF({
+          orientation: "portrait",
+          unit: "mm",
+          format: "a4",
+          compress: false, // Tidak compress untuk kualitas lebih baik
+        });
 
-        // Header
-        pdf.setFontSize(20);
+        // Set font dan kualitas
+        pdf.setFont("helvetica", "normal");
+
+        // Background putih untuk memastikan kontras
+        pdf.setFillColor(255, 255, 255);
+        pdf.rect(0, 0, 210, 297, "F");
+
+        // Header dengan logo placeholder
+        pdf.setFontSize(24);
         pdf.setTextColor(30, 64, 175);
+        pdf.setFont("helvetica", "bold");
         pdf.text("HinziStore", 105, 30, { align: "center" });
 
-        pdf.setFontSize(12);
+        pdf.setFontSize(14);
         pdf.setTextColor(107, 114, 128);
-        pdf.text("Pusat Top Up Game & Pulsa Terpercaya", 105, 40, {
+        pdf.setFont("helvetica", "normal");
+        pdf.text("Pusat Top Up Game & Pulsa Terpercaya", 105, 42, {
           align: "center",
         });
 
-        // Line
-        pdf.setLineWidth(1);
+        // Garis pembatas yang lebih tebal
+        pdf.setLineWidth(2);
         pdf.setDrawColor(59, 130, 246);
-        pdf.line(20, 50, 190, 50);
+        pdf.line(15, 50, 195, 50);
 
-        // Transaction details
-        pdf.setFontSize(12);
+        // Transaction details dengan spacing yang lebih baik
+        pdf.setFontSize(13);
         pdf.setTextColor(0, 0, 0);
+        pdf.setFont("helvetica", "normal");
 
-        pdf.text("Tanggal:", 20, 70);
-        pdf.text(data.tanggal, 60, 70);
+        // Format data dengan alignment yang lebih rapi
+        const startY = 70;
+        const lineHeight = 18;
 
-        pdf.text("No HP:", 20, 85);
-        pdf.text(data.nohp, 60, 85);
+        // Tanggal
+        pdf.setFont("helvetica", "bold");
+        pdf.text("📅 Tanggal:", 20, startY);
+        pdf.setFont("helvetica", "normal");
+        pdf.text(data.tanggal, 65, startY);
 
-        pdf.text("Produk:", 20, 100);
-        pdf.text(data.deskripsi, 60, 100);
+        // NO.HP/ID
+        pdf.setFont("helvetica", "bold");
+        pdf.text("📱 NO.HP/ID:", 20, startY + lineHeight);
+        pdf.setFont("helvetica", "normal");
+        pdf.text(data.nohp, 65, startY + lineHeight);
 
-        // Total
+        // Produk
+        pdf.setFont("helvetica", "bold");
+        pdf.text("🎮 Produk:", 20, startY + lineHeight * 2);
+        pdf.setFont("helvetica", "normal");
+        pdf.text(data.deskripsi, 65, startY + lineHeight * 2);
+
+        // Garis pembatas sebelum total
+        pdf.setLineWidth(1);
+        pdf.setDrawColor(200, 200, 200);
+        pdf.line(20, startY + lineHeight * 2.8, 190, startY + lineHeight * 2.8);
+
+        // Total dengan background biru
+        const totalY = startY + lineHeight * 3.5;
+        pdf.setFillColor(59, 130, 246);
+        pdf.roundedRect(20, totalY - 8, 170, 25, 3, 3, "F");
+
         pdf.setFontSize(16);
-        pdf.setTextColor(30, 64, 175);
-        pdf.text("Total Pembayaran:", 20, 125);
-        pdf.text(`Rp ${data.nominal.toLocaleString("id-ID")}`, 105, 125, {
-          align: "center",
-        });
+        pdf.setTextColor(255, 255, 255);
+        pdf.setFont("helvetica", "bold");
+        pdf.text("Total Pembayaran:", 105, totalY + 2, { align: "center" });
 
-        // Promo
-        pdf.setFontSize(10);
+        pdf.setFontSize(20);
+        pdf.text(
+          `Rp ${data.nominal.toLocaleString("id-ID")}`,
+          105,
+          totalY + 12,
+          {
+            align: "center",
+          }
+        );
+
+        // Promo section dengan background kuning
+        const promoY = totalY + 35;
+        pdf.setFillColor(254, 243, 199);
+        pdf.setDrawColor(245, 158, 11);
+        pdf.setLineWidth(1);
+        pdf.roundedRect(20, promoY - 5, 170, 30, 3, 3, "FD");
+
+        pdf.setFontSize(14);
         pdf.setTextColor(146, 64, 14);
-        pdf.text("PROMO SPESIAL!", 105, 150, { align: "center" });
-        pdf.text("Cashback 5% untuk pembelian berikutnya!", 105, 160, {
-          align: "center",
-        });
-        pdf.text("Top up minimal Rp 50.000 dapat bonus diamond ML!", 105, 170, {
-          align: "center",
-        });
+        pdf.setFont("helvetica", "bold");
+        pdf.text("🎉 PROMO SPESIAL!", 105, promoY + 5, { align: "center" });
 
-        // Footer
-        pdf.setFontSize(10);
-        pdf.setTextColor(107, 114, 128);
-        pdf.text("Terima kasih atas kepercayaan Anda!", 105, 190, {
+        pdf.setFontSize(11);
+        pdf.setFont("helvetica", "normal");
+        pdf.text("Cashback 5% untuk pembelian berikutnya!", 105, promoY + 12, {
           align: "center",
         });
         pdf.text(
-          "HinziStore - Buka 24 Jam - WhatsApp: 0813-3037-4331",
+          "Top up minimal Rp 50.000 dapat bonus diamond ML!",
           105,
-          200,
-          { align: "center" }
+          promoY + 18,
+          {
+            align: "center",
+          }
         );
+
+        // Footer dengan informasi kontak
+        const footerY = promoY + 45;
+        pdf.setFontSize(12);
+        pdf.setTextColor(30, 64, 175);
+        pdf.setFont("helvetica", "bold");
+        pdf.text("Terima kasih atas kepercayaan Anda! 🙏", 105, footerY, {
+          align: "center",
+        });
+
+        pdf.setFontSize(10);
+        pdf.setTextColor(107, 114, 128);
+        pdf.setFont("helvetica", "normal");
+        pdf.text("HinziStore - Solusi Top Up Terbaik", 105, footerY + 8, {
+          align: "center",
+        });
+        pdf.text("WhatsApp: 0813-3037-4331", 105, footerY + 15, {
+          align: "center",
+        });
+        pdf.text("Instagram: @hinzistore", 105, footerY + 22, {
+          align: "center",
+        });
+        pdf.text("Buka 24 Jam - Siap Melayani Anda", 105, footerY + 29, {
+          align: "center",
+        });
 
         // Download with filename based on phone number
         const filename = `${data.nohp}-Nota.pdf`;
