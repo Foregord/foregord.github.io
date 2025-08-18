@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Kalkulator Bagi Hasil TesDIA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              "dark-bg": "#0b1020",
+              "dark-card": "#111731",
+              "dark-muted": "#1a2246",
+              "dark-text": "#e9eefc",
+              "dark-sub": "#a9b4d9",
+              brand: "#7aa2ff",
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      body {
+        background: linear-gradient(120deg, #0b1020, #0e1631);
+      }
+      .glass {
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.04),
+          rgba(255, 255, 255, 0.02)
+        );
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+      }
+      .glow {
+        box-shadow: 0 6px 18px rgba(122, 162, 255, 0.35);
+      }
+      .warning {
+        animation: pulse 2s infinite;
+      }
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.7;
+        }
+      }
+      .editable-input {
+        background: transparent;
+        border: 1px solid transparent;
+        width: 60px;
+        text-align: center;
+        border-radius: 4px;
+        transition: all 0.2s;
+      }
+      .editable-input:hover {
+        border-color: rgba(122, 162, 255, 0.5);
+        background: rgba(122, 162, 255, 0.1);
+      }
+      .editable-input:focus {
+        outline: none;
+        border-color: #7aa2ff;
+        background: rgba(122, 162, 255, 0.15);
+      }
+    </style>
+  </head>
+  <body class="min-h-screen text-dark-text font-sans">
+    <div class="max-w-6xl mx-auto p-6">
+      <!-- Header -->
+      <header
+        class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6"
+      >
+        <div>
+          <h1 class="text-2xl font-bold text-dark-text">
+            Kalkulator Bagi Hasil TesDIA
+            <span class="text-sm text-dark-sub font-normal"
+              >– Negosiasi Cepat & Anti Bingung</span
+            >
+          </h1>
+          <p class="text-sm text-dark-sub mt-1">
+            Skema A (Narahubung + Konsultan) & Skema B (Narahubung Saja) —
+            Pembagian Fee dengan Kontrol Penuh
+          </p>
+        </div>
+        <div class="flex gap-3">
+          <button
+            onclick="window.print()"
+            class="px-4 py-2 bg-transparent border border-white/20 text-dark-text rounded-lg hover:bg-white/5 transition-colors"
+          >
+            🖨️ Cetak / PDF
+          </button>
+          <button
+            id="copyBtn"
+            class="px-4 py-2 bg-transparent text-dark-text rounded-lg hover:bg-white/5 transition-colors opacity-80"
+          >
+            📋 Copy Ringkasan
+          </button>
+        </div>
+      </header>
+
+      <div class="grid lg:grid-cols-2 gap-6">
+        <!-- Input Panel -->
+        <section class="glass rounded-2xl p-6">
+          <!-- Skema Selection -->
+          <div class="mb-6">
+            <label class="block text-sm text-dark-sub mb-3">Pilih Skema</label>
+            <div class="flex flex-wrap gap-3 items-center">
+              <button
+                id="skemaA"
+                class="px-4 py-2 bg-brand text-dark-bg rounded-lg font-semibold glow transition-all"
+              >
+                Skema A
+              </button>
+              <button
+                id="skemaB"
+                class="px-4 py-2 bg-transparent border border-white/20 text-dark-text rounded-lg transition-all"
+              >
+                Skema B
+              </button>
+              <span
+                id="skemaInfo"
+                class="px-3 py-1 bg-dark-card border border-white/10 rounded-full text-xs text-dark-sub"
+              >
+                Narahubung + Konsultan
+              </span>
+            </div>
+          </div>
+
+          <div class="border-t border-white/10 my-6"></div>
+
+          <!-- Input Grid - Simplified -->
+          <div class="grid md:grid-cols-2 gap-6">
+            <!-- Left Column -->
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm text-dark-sub mb-2"
+                  >Nominal untuk Perusahaan per Anak (Rp)</label
+                >
+                <input
+                  id="nominalPerusahaan"
+                  type="number"
+                  min="150000"
+                  max="200000"
+                  step="100"
+                  value="175000"
+                  class="w-full bg-dark-card border border-white/10 text-dark-text rounded-lg px-3 py-3 text-lg focus:border-brand focus:outline-none transition-all"
+                  placeholder="150.000 - 200.000"
+                />
+                <div id="validationMsg" class="text-xs mt-1 transition-all">
+                  <span class="text-dark-sub"
+                    >Rentang: Rp 150.000 - Rp 200.000 per anak</span
+                  >
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-sm text-dark-sub mb-2"
+                  >Biaya per Anak untuk Konsumen (Rp)</label
+                >
+                <input
+                  id="biayaPerAnak"
+                  type="number"
+                  min="100000"
+                  step="1000"
+                  value="350000"
+                  class="w-full bg-dark-card border border-white/10 text-dark-text rounded-lg px-3 py-3 text-lg focus:border-brand focus:outline-none"
+                  placeholder="cth: 350.000"
+                />
+              </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm text-dark-sub mb-2"
+                  >Jumlah Anak</label
+                >
+                <input
+                  id="jumlahAnak"
+                  type="number"
+                  min="1"
+                  value="25"
+                  class="w-full bg-dark-card border border-white/10 text-dark-text rounded-lg px-3 py-3 text-lg focus:border-brand focus:outline-none"
+                  placeholder="cth: 25"
+                />
+              </div>
+
+              <!-- Quick Reset Button -->
+              <div class="pt-4">
+                <button
+                  id="resetBtn"
+                  class="w-full px-4 py-2 bg-dark-muted border border-white/20 text-dark-text rounded-lg hover:bg-white/5 transition-colors text-sm"
+                >
+                  🔄 Reset ke Default Skema
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="border-t border-white/10 my-6"></div>
+
+          <!-- KPI Cards -->
+          <div class="grid grid-cols-3 gap-4">
+            <div
+              class="bg-gradient-to-b from-brand/20 to-brand/10 border border-brand/30 rounded-xl p-4"
+            >
+              <div class="text-xs text-dark-sub mb-1">Total Pendapatan</div>
+              <div id="kpiTotal" class="text-xl font-bold text-dark-text">
+                Rp 0
+              </div>
+            </div>
+            <div
+              class="bg-gradient-to-b from-emerald-500/20 to-emerald-500/10 border border-emerald-500/30 rounded-xl p-4"
+            >
+              <div class="text-xs text-dark-sub mb-1">
+                Fee (Sisa Bagi Hasil)
+              </div>
+              <div id="kpiFee" class="text-xl font-bold text-dark-text">
+                Rp 0
+              </div>
+            </div>
+            <div
+              class="bg-gradient-to-b from-yellow-500/20 to-yellow-500/10 border border-yellow-500/30 rounded-xl p-4"
+            >
+              <div class="text-xs text-dark-sub mb-1">Total % Terpakai</div>
+              <div id="kpiPercent" class="text-xl font-bold text-dark-text">
+                0%
+              </div>
+            </div>
+          </div>
+
+          <!-- Fee Breakdown -->
+          <div
+            class="mt-4 p-4 bg-dark-card/30 border border-white/10 rounded-lg"
+          >
+            <div class="text-xs text-dark-sub mb-2">Formula Fee:</div>
+            <div class="text-sm text-dark-text">
+              <span id="formulaBreakdown"
+                >Fee = (Biaya Konsumen × Jumlah Anak) - (Biaya Perusahaan ×
+                Jumlah Anak)</span
+              >
+            </div>
+          </div>
+        </section>
+
+        <!-- Results Panel -->
+        <section class="glass rounded-2xl p-6">
+          <div
+            class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-4"
+          >
+            <div>
+              <h3 class="text-sm text-dark-sub">Pembagian Fee</h3>
+              <div id="summary" class="font-bold text-lg text-dark-text mt-1">
+                —
+              </div>
+            </div>
+            <div class="flex gap-2">
+              <span
+                class="px-2 py-1 bg-dark-card border border-white/10 rounded-full text-xs text-dark-sub"
+                >Editable</span
+              >
+              <span
+                class="px-2 py-1 bg-dark-card border border-white/10 rounded-full text-xs text-dark-sub"
+                >Real-time</span
+              >
+            </div>
+          </div>
+
+          <div class="border-t border-white/10 mb-4"></div>
+
+          <!-- Results Table with Editable Percentages -->
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead>
+                <tr class="bg-dark-muted">
+                  <th
+                    class="text-left py-3 px-4 text-sm text-dark-sub font-medium rounded-tl-lg"
+                  >
+                    Penerima
+                  </th>
+                  <th
+                    class="text-left py-3 px-4 text-sm text-dark-sub font-medium"
+                  >
+                    % dari Fee
+                  </th>
+                  <th
+                    class="text-left py-3 px-4 text-sm text-dark-sub font-medium"
+                  >
+                    Total Nominal
+                  </th>
+                  <th
+                    class="text-left py-3 px-4 text-sm text-dark-sub font-medium rounded-tr-lg"
+                  >
+                    Per Anak
+                  </th>
+                </tr>
+              </thead>
+              <tbody id="resultsBody" class="divide-y divide-white/10"></tbody>
+              <tfoot class="border-t-2 border-white/20">
+                <tr class="bg-dark-muted/50">
+                  <td
+                    class="py-3 px-4 text-right font-semibold text-dark-sub"
+                    colspan="2"
+                  >
+                    TOTAL FEE
+                  </td>
+                  <td
+                    id="totalFee"
+                    class="py-3 px-4 font-bold text-dark-text"
+                  ></td>
+                  <td
+                    id="totalPerAnak"
+                    class="py-3 px-4 font-bold text-dark-text"
+                  ></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
+          <!-- Percentage Warning -->
+          <div id="percentageWarning" class="mt-4 p-3 rounded-lg hidden">
+            <p class="text-sm text-center">
+              <span class="text-yellow-400">⚠️</span>
+              <span id="warningText"></span>
+            </p>
+          </div>
+
+          <!-- Perusahaan Info -->
+          <div
+            class="mt-4 p-4 bg-dark-card/30 border border-white/10 rounded-lg"
+          >
+            <div class="flex justify-between items-center">
+              <div>
+                <div class="text-sm text-dark-sub">
+                  Perusahaan (TesDIA Bandung)
+                </div>
+                <div
+                  id="perusahaanNominal"
+                  class="text-lg font-bold text-dark-text"
+                >
+                  Rp 200.000
+                </div>
+              </div>
+              <div class="text-right">
+                <div class="text-xs text-dark-sub">Per Anak</div>
+                <div id="perusahaanPerAnak" class="text-sm text-dark-text">
+                  Rp 8.000
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-4 p-3 bg-dark-card/50 rounded-lg">
+            <p class="text-xs text-dark-sub">
+              <strong>Tip:</strong> Klik angka persentase di tabel untuk
+              mengedit. Persentase total boleh kurang dari 100% (sisanya jadi
+              profit tambahan perusahaan).
+            </p>
+          </div>
+        </section>
+      </div>
+
+      <!-- Footer Tip -->
+      <div class="mt-6 text-center">
+        <p class="text-sm text-dark-sub">
+          💡 <strong>Tip Nego:</strong> Sesuaikan persentase langsung di tabel.
+          Nominal perusahaan sudah fix, sisanya bebas diatur sesuai negosiasi.
+        </p>
+      </div>
+    </div>
+
+    <script>
+      const schemes = {
+        A: {
+          name: "Skema A",
+          desc: "Narahubung + Konsultan",
+          allocations: {
+            "Pihak Kedua": 30,
+            "Yayasan/Institusi": 10,
+            "Dana Kegiatan": 10,
+          },
+        },
+        B: {
+          name: "Skema B",
+          desc: "Narahubung Saja",
+          allocations: {
+            "Pihak Kedua": 15,
+            "Yayasan/Institusi": 20,
+            "Dana Kegiatan": 10,
+          },
+        },
+      };
+
+      let currentScheme = "A";
+      let validationTimeout = null;
+      let currentAllocations = { ...schemes.A.allocations };
+
+      const el = (id) => document.getElementById(id);
+      const fmtIDR = (n) =>
+        new Intl.NumberFormat("id-ID", {
+          style: "currency",
+          currency: "IDR",
+          maximumFractionDigits: 0,
+        }).format(n || 0);
+      const fmtPct = (x) => x.toFixed(0) + "%";
+
+      function validateNominalPerusahaan(value) {
+        const input = el("nominalPerusahaan");
+        const msgDiv = el("validationMsg");
+
+        if (value < 150000 || value > 200000) {
+          input.classList.add("border-red-500");
+          input.classList.remove("border-white/10");
+          msgDiv.innerHTML =
+            '<span class="text-red-400 warning">⚠️ Nominal harus antara Rp 150.000 - Rp 200.000 per anak</span>';
+          return false;
+        } else {
+          input.classList.remove("border-red-500");
+          input.classList.add("border-green-500");
+          msgDiv.innerHTML =
+            '<span class="text-green-400">✅ Nominal valid</span>';
+
+          // Reset to normal after 2 seconds
+          setTimeout(() => {
+            input.classList.remove("border-green-500");
+            input.classList.add("border-white/10");
+            msgDiv.innerHTML =
+              '<span class="text-dark-sub">Rentang: Rp 150.000 - Rp 200.000 per anak</span>';
+          }, 2000);
+
+          return true;
+        }
+      }
+
+      function calculateResults() {
+        // Get inputs
+        const nominalPerusahaanPerAnak = parseInt(
+          el("nominalPerusahaan").value || 0
+        );
+        const biayaPerAnak = parseInt(el("biayaPerAnak").value || 0);
+        const jumlahAnak = parseInt(el("jumlahAnak").value || 0);
+
+        // Calculate totals
+        const totalPendapatan = biayaPerAnak * jumlahAnak;
+        const totalBiayaPerusahaan = nominalPerusahaanPerAnak * jumlahAnak;
+        const fee = Math.max(totalPendapatan - totalBiayaPerusahaan, 0);
+
+        // Calculate allocations from fee
+        const results = [];
+        let totalUsedPercent = 0;
+
+        Object.entries(currentAllocations).forEach(([name, percent]) => {
+          const nominal = (percent / 100) * fee;
+          results.push({
+            recipient: name,
+            percentage: percent,
+            nominal: nominal,
+          });
+          totalUsedPercent += percent;
+        });
+
+        // Update UI
+        updateKPIs(
+          totalPendapatan,
+          fee,
+          totalUsedPercent,
+          jumlahAnak,
+          totalBiayaPerusahaan,
+          nominalPerusahaanPerAnak
+        );
+        updateResultsTable(results, jumlahAnak, fee);
+        updateSummary(
+          totalPendapatan,
+          results,
+          jumlahAnak,
+          biayaPerAnak,
+          fee,
+          totalBiayaPerusahaan
+        );
+        updateFormulaBreakdown(
+          biayaPerAnak,
+          jumlahAnak,
+          nominalPerusahaanPerAnak,
+          fee
+        );
+        updatePercentageWarning(totalUsedPercent);
+      }
+
+      function updateKPIs(
+        totalPendapatan,
+        fee,
+        totalUsedPercent,
+        jumlahAnak,
+        totalBiayaPerusahaan,
+        nominalPerusahaanPerAnak
+      ) {
+        el("kpiTotal").textContent = fmtIDR(totalPendapatan);
+        el("kpiFee").textContent = fmtIDR(fee);
+        el("kpiPercent").textContent = totalUsedPercent.toFixed(0) + "%";
+
+        // Update perusahaan info
+        el("perusahaanNominal").textContent = fmtIDR(totalBiayaPerusahaan);
+        el("perusahaanPerAnak").textContent = fmtIDR(nominalPerusahaanPerAnak);
+      }
+
+      function updateResultsTable(results, jumlahAnak, totalFee) {
+        const tbody = el("resultsBody");
+        tbody.innerHTML = "";
+
+        results.forEach((result, index) => {
+          const perAnak = jumlahAnak > 0 ? result.nominal / jumlahAnak : 0;
+
+          const row = document.createElement("tr");
+          row.className = "hover:bg-white/5 transition-colors";
+
+          row.innerHTML = `
+            <td class="py-3 px-4 text-dark-text">${result.recipient}</td>
+            <td class="py-3 px-4 text-dark-text">
+              <input 
+                type="number" 
+                min="0" 
+                max="100" 
+                step="1" 
+                value="${result.percentage}" 
+                class="editable-input text-dark-text"
+                data-recipient="${result.recipient}"
+                onchange="updatePercentage('${result.recipient}', this.value)"
+              />%
+            </td>
+            <td class="py-3 px-4 text-dark-text font-semibold">${fmtIDR(
+              result.nominal
+            )}</td>
+            <td class="py-3 px-4 text-dark-text">${
+              jumlahAnak > 0 ? fmtIDR(perAnak) : "—"
+            }</td>
+          `;
+          tbody.appendChild(row);
+        });
+
+        el("totalFee").textContent = fmtIDR(totalFee);
+        el("totalPerAnak").textContent =
+          jumlahAnak > 0 ? fmtIDR(totalFee / jumlahAnak) : "—";
+      }
+
+      function updatePercentage(recipient, newPercent) {
+        const percent = Math.max(0, Math.min(100, parseFloat(newPercent || 0)));
+        currentAllocations[recipient] = percent;
+        calculateResults();
+      }
+
+      function updatePercentageWarning(totalPercent) {
+        const warningDiv = el("percentageWarning");
+        const warningText = el("warningText");
+
+        if (totalPercent > 100) {
+          warningDiv.className =
+            "mt-4 p-3 rounded-lg bg-red-500/20 border border-red-500/30";
+          warningText.textContent = `Total persentase ${totalPercent.toFixed(
+            0
+          )}% melebihi 100%! Fee tidak mencukupi.`;
+          warningDiv.classList.remove("hidden");
+        } else if (totalPercent < 90) {
+          warningDiv.className =
+            "mt-4 p-3 rounded-lg bg-blue-500/20 border border-blue-500/30";
+          warningText.textContent = `Total persentase ${totalPercent.toFixed(
+            0
+          )}%. Sisa ${(100 - totalPercent).toFixed(
+            0
+          )}% menjadi profit tambahan perusahaan.`;
+          warningDiv.classList.remove("hidden");
+        } else {
+          warningDiv.classList.add("hidden");
+        }
+      }
+
+      function updateSummary(
+        totalPendapatan,
+        results,
+        jumlahAnak,
+        biayaPerAnak,
+        fee,
+        totalBiayaPerusahaan
+      ) {
+        const scheme = schemes[currentScheme];
+        const pihakKedua = results.find((r) => r.recipient === "Pihak Kedua");
+        const perAnakPihakKedua =
+          jumlahAnak > 0 && pihakKedua ? pihakKedua.nominal / jumlahAnak : 0;
+
+        let summary = `${scheme.name} • ${scheme.desc} • `;
+        summary += `Fee ${fmtIDR(fee)} dari pendapatan ${fmtIDR(
+          totalPendapatan
+        )}. `;
+
+        if (pihakKedua) {
+          summary += `Pihak Kedua: ${fmtIDR(pihakKedua.nominal)}`;
+          if (jumlahAnak > 0) {
+            summary += ` (${fmtIDR(perAnakPihakKedua)}/anak)`;
+          }
+          summary += `. `;
+        }
+
+        summary += `Perusahaan: ${fmtIDR(totalBiayaPerusahaan)} (fix).`;
+
+        el("summary").textContent = summary;
+      }
+
+      function updateFormulaBreakdown(
+        biayaPerAnak,
+        jumlahAnak,
+        nominalPerusahaanPerAnak,
+        fee
+      ) {
+        const totalPendapatan = biayaPerAnak * jumlahAnak;
+        const totalBiayaPerusahaan = nominalPerusahaanPerAnak * jumlahAnak;
+
+        el("formulaBreakdown").textContent = `${fmtIDR(fee)} = (${fmtIDR(
+          biayaPerAnak
+        )} × ${jumlahAnak}) - (${fmtIDR(
+          nominalPerusahaanPerAnak
+        )} × ${jumlahAnak})`;
+      }
+
+      function setActiveScheme(scheme) {
+        currentScheme = scheme;
+        currentAllocations = { ...schemes[scheme].allocations };
+
+        const aBtn = el("skemaA");
+        const bBtn = el("skemaB");
+        const info = el("skemaInfo");
+
+        if (scheme === "A") {
+          aBtn.className =
+            "px-4 py-2 bg-brand text-dark-bg rounded-lg font-semibold glow transition-all";
+          bBtn.className =
+            "px-4 py-2 bg-transparent border border-white/20 text-dark-text rounded-lg transition-all";
+          info.textContent = "Narahubung + Konsultan";
+        } else {
+          aBtn.className =
+            "px-4 py-2 bg-transparent border border-white/20 text-dark-text rounded-lg transition-all";
+          bBtn.className =
+            "px-4 py-2 bg-brand text-dark-bg rounded-lg font-semibold glow transition-all";
+          info.textContent = "Narahubung Saja";
+        }
+        calculateResults();
+      }
+
+      function resetToDefault() {
+        currentAllocations = { ...schemes[currentScheme].allocations };
+        calculateResults();
+      }
+
+      function copySummary() {
+        const text = el("summary").textContent;
+        navigator.clipboard
+          .writeText(text)
+          .then(() => {
+            const btn = el("copyBtn");
+            const oldText = btn.textContent;
+            btn.textContent = "✅ Tersalin!";
+            btn.className = btn.className.replace("opacity-80", "opacity-100");
+            setTimeout(() => {
+              btn.textContent = oldText;
+              btn.className = btn.className.replace(
+                "opacity-100",
+                "opacity-80"
+              );
+            }, 1500);
+          })
+          .catch(() => {
+            alert("Gagal menyalin ke clipboard");
+          });
+      }
+
+      // Make updatePercentage available globally
+      window.updatePercentage = updatePercentage;
+
+      // Event listeners
+      el("skemaA").addEventListener("click", () => setActiveScheme("A"));
+      el("skemaB").addEventListener("click", () => setActiveScheme("B"));
+      el("resetBtn").addEventListener("click", resetToDefault);
+
+      el("nominalPerusahaan").addEventListener("input", function () {
+        const value = parseInt(this.value || 0);
+
+        // Clear previous timeout
+        if (validationTimeout) {
+          clearTimeout(validationTimeout);
+        }
+
+        // Set new timeout for validation
+        validationTimeout = setTimeout(() => {
+          const isValid = validateNominalPerusahaan(value);
+          if (isValid) {
+            calculateResults();
+          }
+        }, 2000);
+
+        // Still calculate immediately for real-time updates
+        calculateResults();
+      });
+
+      el("biayaPerAnak").addEventListener("input", calculateResults);
+      el("jumlahAnak").addEventListener("input", calculateResults);
+      el("copyBtn").addEventListener("click", copySummary);
+
+      // Initialize
+      setActiveScheme("A");
+      calculateResults();
+    </script>
+  </body>
+</html>
