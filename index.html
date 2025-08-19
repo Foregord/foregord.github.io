@@ -3,1475 +3,1089 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AI Prompt JSON Generator Pro</title>
+    <title>TesDIA Bandung - Company Profile</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#0077B6",
+              secondary: "#00B4D8",
+              accent: "#90E0EF",
+              dark: "#03045E",
+              light: "#CAF0F8",
+            },
+          },
+        },
+      };
+    </script>
     <style>
-      .gradient-bg {
-        background: linear-gradient(135deg, #6b73ff 0%, #000dff 100%);
+      @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap");
+      body {
+        font-family: "Poppins", sans-serif;
+        scroll-behavior: smooth;
       }
-      .prompt-card:hover {
-        transform: translateY(-5px);
+      .hero-bg {
+        background: linear-gradient(rgba(0, 119, 182, 0.8), rgba(3, 4, 94, 0.9)),
+          url("https://images.unsplash.com/photo-1523240795612-9a054b0db644?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80");
+        background-size: cover;
+        background-position: center;
+      }
+      .dropdown-menu {
+        transform: translateY(10px);
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+      }
+      .dropdown:hover .dropdown-menu {
+        transform: translateY(0);
+        opacity: 1;
+        visibility: visible;
+      }
+      .package-card:hover {
+        transform: translateY(-10px);
         box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
           0 10px 10px -5px rgba(0, 0, 0, 0.04);
       }
-      .json-display {
-        font-family: "Courier New", Courier, monospace;
-        background-color: #1e293b;
-        color: #f8fafc;
-        border-radius: 0.5rem;
-        max-height: 400px;
-        overflow-y: auto;
-      }
-      .tab-active {
-        border-bottom: 3px solid #3b82f6;
-        color: #3b82f6;
-        font-weight: 600;
-      }
-      .chat-container {
-        max-height: 300px;
-        overflow-y: auto;
-        background: linear-gradient(to bottom, #f8fafc, #e2e8f0);
-      }
-      .chat-bubble {
-        animation: slideIn 0.3s ease-out;
-      }
-      @keyframes slideIn {
-        from {
-          opacity: 0;
-          transform: translateY(10px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-      .voice-type-card {
-        border: 2px solid transparent;
+      .testimonial-card {
         transition: all 0.3s ease;
       }
-      .voice-type-card.selected {
-        border-color: #3b82f6;
-        background-color: #eff6ff;
+      .testimonial-card:hover {
+        transform: scale(1.03);
+      }
+      .nav-link {
+        position: relative;
+      }
+      .nav-link::after {
+        content: "";
+        position: absolute;
+        width: 0;
+        height: 2px;
+        bottom: -5px;
+        left: 0;
+        background-color: #00b4d8;
+        transition: width 0.3s ease;
+      }
+      .nav-link:hover::after {
+        width: 100%;
+      }
+      .current-page::after {
+        width: 100%;
       }
     </style>
   </head>
-  <body class="bg-gray-50 min-h-screen">
-    <header class="gradient-bg text-white py-6 shadow-lg">
-      <div class="container mx-auto px-4">
-        <div class="flex flex-col md:flex-row justify-between items-center">
-          <div class="flex items-center mb-4 md:mb-0">
-            <i class="fas fa-robot text-3xl mr-3"></i>
-            <h1 class="text-2xl md:text-3xl font-bold">
-              AI Prompt JSON Generator Pro
-            </h1>
-          </div>
-          <div class="flex items-center space-x-4">
-            <!-- Language Toggle -->
-            <div class="flex bg-white/20 rounded-lg p-1">
-              <button
-                id="lang-en"
-                class="lang-btn px-3 py-1 rounded text-sm font-medium bg-white text-blue-600"
+  <body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg sticky top-0 z-50">
+      <div class="max-w-7xl mx-auto px-4">
+        <div class="flex justify-between">
+          <div class="flex space-x-7">
+            <div class="flex items-center py-4">
+              <a
+                href="#"
+                class="text-primary font-bold text-2xl flex items-center"
               >
-                EN
-              </button>
-              <button
-                id="lang-id"
-                class="lang-btn px-3 py-1 rounded text-sm font-medium text-white"
-              >
-                ID
-              </button>
+                <i class="fas fa-brain mr-2"></i>
+                <span>TesDIA Bandung</span>
+              </a>
             </div>
-            <!-- AI Chat Toggle -->
+          </div>
+          <div class="hidden md:flex items-center space-x-1">
+            <a
+              href="#home"
+              class="nav-link py-5 px-3 text-gray-700 hover:text-primary font-medium current-page"
+              >Home</a
+            >
+
+            <div class="dropdown relative group">
+              <button
+                class="nav-link py-5 px-3 text-gray-700 hover:text-primary font-medium flex items-center"
+              >
+                Pendahuluan <i class="fas fa-chevron-down ml-1 text-xs"></i>
+              </button>
+              <div
+                class="dropdown-menu absolute left-0 mt-2 w-56 bg-white rounded-md shadow-lg py-2"
+              >
+                <a
+                  href="#pendahuluan"
+                  class="block px-4 py-2 text-sm text-gray-700 hover:bg-light hover:text-primary"
+                  >Tentang TesDIA</a
+                >
+                <a
+                  href="#riset"
+                  class="block px-4 py-2 text-sm text-gray-700 hover:bg-light hover:text-primary"
+                  >Riset Analisa Sidik Jari</a
+                >
+                <a
+                  href="#kecerdasan"
+                  class="block px-4 py-2 text-sm text-gray-700 hover:bg-light hover:text-primary"
+                  >Kecerdasan Majemuk</a
+                >
+              </div>
+            </div>
+
+            <a
+              href="#testimoni"
+              class="nav-link py-5 px-3 text-gray-700 hover:text-primary font-medium"
+              >Testimoni</a
+            >
+            <a
+              href="#kemitraan"
+              class="nav-link py-5 px-3 text-gray-700 hover:text-primary font-medium"
+              >Kemitraan</a
+            >
+            <a
+              href="#tentang"
+              class="nav-link py-5 px-3 text-gray-700 hover:text-primary font-medium"
+              >Tentang Kami</a
+            >
+          </div>
+          <div class="md:hidden flex items-center">
+            <button class="outline-none mobile-menu-button">
+              <i class="fas fa-bars text-2xl text-primary"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+      <!-- Mobile Menu -->
+      <div class="hidden mobile-menu">
+        <ul class="pt-2 pb-3 space-y-1">
+          <li>
+            <a
+              href="#home"
+              class="block px-4 py-2 text-sm font-medium text-white bg-primary"
+              >Home</a
+            >
+          </li>
+          <li>
             <button
-              id="ai-chat-toggle"
-              class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition"
+              class="w-full text-left px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 flex justify-between items-center"
             >
-              <i class="fas fa-comments mr-2"></i>
-              <span data-lang="chat-ai">AI Chat</span>
+              Pendahuluan <i class="fas fa-chevron-down ml-1 text-xs"></i>
             </button>
-          </div>
-        </div>
+            <ul class="pl-6 space-y-1">
+              <li>
+                <a
+                  href="#pendahuluan"
+                  class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >Tentang TesDIA</a
+                >
+              </li>
+              <li>
+                <a
+                  href="#riset"
+                  class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >Riset Analisa Sidik Jari</a
+                >
+              </li>
+              <li>
+                <a
+                  href="#kecerdasan"
+                  class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >Kecerdasan Majemuk</a
+                >
+              </li>
+            </ul>
+          </li>
+          <li>
+            <a
+              href="#testimoni"
+              class="block px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
+              >Testimoni</a
+            >
+          </li>
+          <li>
+            <a
+              href="#kemitraan"
+              class="block px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
+              >Kemitraan</a
+            >
+          </li>
+          <li>
+            <a
+              href="#tentang"
+              class="block px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
+              >Tentang Kami</a
+            >
+          </li>
+        </ul>
       </div>
-    </header>
+    </nav>
 
-    <!-- AI Chat Modal -->
-    <div id="ai-chat-modal" class="fixed inset-0 bg-black/50 z-50 hidden">
-      <div class="flex items-center justify-center min-h-screen p-4">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl">
-          <div class="flex justify-between items-center p-6 border-b">
-            <h3 class="text-xl font-bold" data-lang="chat-title">
-              AI Assistant
-            </h3>
-            <button id="close-chat" class="text-gray-500 hover:text-gray-700">
-              <i class="fas fa-times text-xl"></i>
-            </button>
-          </div>
-
-          <div class="chat-container p-4" id="chat-messages">
-            <div class="chat-bubble bg-blue-100 p-3 rounded-lg mb-3">
-              <p class="text-sm" data-lang="chat-welcome">
-                Hi! I'm your AI assistant. Describe what kind of video or image
-                you want to create, and I'll help fill out the form
-                automatically!
-              </p>
-            </div>
-          </div>
-
-          <div class="p-4 border-t">
-            <div class="flex space-x-2">
-              <input
-                type="text"
-                id="chat-input"
-                class="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                data-lang-placeholder="chat-placeholder"
-                placeholder="Describe your video/image idea..."
-              />
-              <button
-                id="send-chat"
-                class="gradient-bg text-white px-6 py-2 rounded-lg hover:opacity-90"
-              >
-                <i class="fas fa-paper-plane"></i>
-              </button>
-            </div>
-            <div class="mt-2">
-              <label
-                class="block text-sm text-gray-600 mb-1"
-                data-lang="api-key-label"
-                >Gemini API Key (Optional):</label
-              >
-              <input
-                type="password"
-                id="api-key"
-                class="w-full px-3 py-1 text-sm border rounded focus:ring-1 focus:ring-blue-500 outline-none"
-                placeholder="AIzaSy..."
-              />
-              <p class="text-xs text-gray-500 mt-1" data-lang="api-key-note">
-                Leave empty to use demo responses
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <main class="container mx-auto px-4 py-8">
-      <div class="bg-white rounded-xl shadow-md p-6 mb-8">
-        <h2
-          class="text-2xl font-bold text-gray-800 mb-4"
-          data-lang="generate-title"
-        >
-          Generate Precise AI Prompts
-        </h2>
-        <p class="text-gray-600 mb-6" data-lang="generate-desc">
-          Create structured JSON prompts for Text-to-Image, Text-to-Video, and
-          learning applications.
+    <!-- Hero Section -->
+    <section id="home" class="hero-bg text-white py-20">
+      <div class="container mx-auto px-4 text-center">
+        <h1 class="text-4xl md:text-6xl font-bold mb-6">
+          Mengenal Potensi Diri Lebih Dalam
+        </h1>
+        <p class="text-xl md:text-2xl mb-10 max-w-3xl mx-auto">
+          TesDIA Bandung membantu Anda mengenal potensi diri melalui analisis
+          sidik jari dan kecerdasan majemuk
         </p>
-
-        <div class="flex border-b mb-6">
-          <button
-            id="image-tab"
-            class="tab-active px-4 py-2 font-medium"
-            data-lang="tab-image"
+        <div class="flex flex-col sm:flex-row justify-center gap-4">
+          <a
+            href="#paket"
+            class="bg-primary hover:bg-dark text-white font-bold py-3 px-8 rounded-full text-lg transition duration-300"
+            >Lihat Paket Kami</a
           >
-            Text-to-Image
-          </button>
-          <button
-            id="video-tab"
-            class="px-4 py-2 font-medium text-gray-600"
-            data-lang="tab-video"
+          <a
+            href="#tentang"
+            class="bg-transparent border-2 border-white hover:bg-white hover:text-primary text-white font-bold py-3 px-8 rounded-full text-lg transition duration-300"
+            >Tentang Kami</a
           >
-            Text-to-Video
-          </button>
-          <button
-            id="learning-tab"
-            class="px-4 py-2 font-medium text-gray-600"
-            data-lang="tab-learning"
-          >
-            Learning Prompts
-          </button>
         </div>
+      </div>
+    </section>
 
-        <!-- Text-to-Image Form -->
-        <div id="image-form" class="tab-content">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <div>
-              <label
-                class="block text-gray-700 font-medium mb-2"
-                data-lang="image-subject-label"
-              >
-                Main Subject
-              </label>
-              <input
-                type="text"
-                id="image-subject"
-                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                data-lang-placeholder="image-subject-placeholder"
-                placeholder="e.g., futuristic city at sunset"
-              />
-            </div>
-            <div>
-              <label
-                class="block text-gray-700 font-medium mb-2"
-                data-lang="image-style-label"
-              >
-                Art Style
-              </label>
-              <select
-                id="image-style"
-                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-              >
-                <option value="" data-lang="select-style">
-                  Select a style
-                </option>
-                <option value="realistic">Realistic</option>
-                <option value="photorealistic">Photorealistic</option>
-                <option value="digital art">Digital Art</option>
-                <option value="watercolor">Watercolor</option>
-                <option value="oil painting">Oil Painting</option>
-                <option value="anime">Anime</option>
-                <option value="pixel art">Pixel Art</option>
-                <option value="cyberpunk">Cyberpunk</option>
-                <option value="cinematic">Cinematic</option>
-              </select>
-            </div>
+    <!-- Pendahuluan Section -->
+    <section id="pendahuluan" class="py-20 bg-white">
+      <div class="container mx-auto px-4">
+        <div class="text-center mb-16">
+          <h2 class="text-3xl md:text-4xl font-bold text-primary mb-4">
+            Tentang TesDIA Bandung
+          </h2>
+          <div class="w-20 h-1 bg-secondary mx-auto"></div>
+        </div>
+        <div class="flex flex-col md:flex-row items-center gap-10">
+          <div class="md:w-1/2">
+            <img
+              src="https://images.unsplash.com/photo-1552664730-d307ca884978?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80"
+              alt="TesDIA"
+              class="rounded-xl shadow-lg"
+            />
           </div>
-
-          <div class="mb-6">
-            <label
-              class="block text-gray-700 font-medium mb-2"
-              data-lang="image-details-label"
+          <div class="md:w-1/2">
+            <h3 class="text-2xl font-bold text-dark mb-4">
+              Mengenal Potensi Diri dengan Ilmiah
+            </h3>
+            <p class="text-gray-700 mb-4">
+              TesDIA Bandung adalah lembaga yang berfokus pada pengembangan
+              potensi diri melalui analisis sidik jari dan teori kecerdasan
+              majemuk. Kami membantu individu mengenal dirinya secara lebih
+              mendalam untuk merancang strategi pengembangan yang tepat.
+            </p>
+            <p class="text-gray-700 mb-6">
+              Dengan pendekatan ilmiah dan profesional, kami menyediakan layanan
+              yang dapat diandalkan untuk membantu Anda memahami kekuatan dan
+              kelemahan diri.
+            </p>
+            <a
+              href="#paket"
+              class="inline-block bg-primary hover:bg-dark text-white font-bold py-3 px-6 rounded-full transition duration-300"
+              >Lihat Paket Kami</a
             >
-              Additional Details
-            </label>
-            <textarea
-              id="image-details"
-              rows="3"
-              class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-              data-lang-placeholder="image-details-placeholder"
-              placeholder="Describe lighting, composition, mood, etc."
-            ></textarea>
-          </div>
-
-          <!-- Shot Composition -->
-          <div class="mb-6">
-            <h4
-              class="font-semibold text-gray-700 mb-3"
-              data-lang="shot-composition"
-            >
-              Shot Composition
-            </h4>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label
-                  class="block text-gray-700 font-medium mb-2"
-                  data-lang="camera-angle"
-                  >Camera Angle</label
-                >
-                <select
-                  id="camera-angle"
-                  class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                >
-                  <option value="">Any angle</option>
-                  <option value="close-up">Close-up</option>
-                  <option value="medium-shot">Medium shot</option>
-                  <option value="wide-shot">Wide shot</option>
-                  <option value="extreme-close-up">Extreme close-up</option>
-                  <option value="bird-eye">Bird's eye view</option>
-                  <option value="low-angle">Low angle</option>
-                  <option value="high-angle">High angle</option>
-                </select>
-              </div>
-              <div>
-                <label
-                  class="block text-gray-700 font-medium mb-2"
-                  data-lang="lens-type"
-                  >Lens Type</label
-                >
-                <select
-                  id="lens-type"
-                  class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                >
-                  <option value="">Standard lens</option>
-                  <option value="35mm">35mm lens</option>
-                  <option value="50mm">50mm lens</option>
-                  <option value="85mm">85mm lens</option>
-                  <option value="wide-angle">Wide angle lens</option>
-                  <option value="telephoto">Telephoto lens</option>
-                  <option value="macro">Macro lens</option>
-                </select>
-              </div>
-              <div>
-                <label
-                  class="block text-gray-700 font-medium mb-2"
-                  data-lang="depth-field"
-                  >Depth of Field</label
-                >
-                <select
-                  id="depth-field"
-                  class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                >
-                  <option value="">Normal DOF</option>
-                  <option value="shallow">Shallow DOF</option>
-                  <option value="extreme-shallow">Extreme shallow DOF</option>
-                  <option value="deep">Deep DOF</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div>
-              <label
-                class="block text-gray-700 font-medium mb-2"
-                data-lang="image-aspect"
-              >
-                Aspect Ratio
-              </label>
-              <select
-                id="image-aspect"
-                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-              >
-                <option value="1:1">Square (1:1)</option>
-                <option value="4:3">Standard (4:3)</option>
-                <option value="16:9">Widescreen (16:9)</option>
-                <option value="9:16">Portrait (9:16)</option>
-                <option value="3:2">Photo (3:2)</option>
-                <option value="21:9">Ultrawide (21:9)</option>
-              </select>
-            </div>
-            <div>
-              <label
-                class="block text-gray-700 font-medium mb-2"
-                data-lang="image-lighting"
-              >
-                Lighting
-              </label>
-              <select
-                id="image-lighting"
-                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-              >
-                <option value="">Any lighting</option>
-                <option value="soft">Soft</option>
-                <option value="dramatic">Dramatic</option>
-                <option value="backlit">Backlit</option>
-                <option value="neon">Neon</option>
-                <option value="natural">Natural</option>
-                <option value="low-key">Low key</option>
-                <option value="high-key">High key</option>
-                <option value="rim-light">Rim light</option>
-              </select>
-            </div>
-            <div>
-              <label
-                class="block text-gray-700 font-medium mb-2"
-                data-lang="image-color"
-              >
-                Color Palette
-              </label>
-              <select
-                id="image-color"
-                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-              >
-                <option value="">Any colors</option>
-                <option value="vibrant">Vibrant</option>
-                <option value="pastel">Pastel</option>
-                <option value="monochrome">Monochrome</option>
-                <option value="warm">Warm tones</option>
-                <option value="cool">Cool tones</option>
-                <option value="lavender-rose-gold">Lavender & Rose Gold</option>
-                <option value="blue-purple">Blue & Purple</option>
-              </select>
-            </div>
           </div>
         </div>
+      </div>
+    </section>
 
-        <!-- Text-to-Video Form -->
-        <div id="video-form" class="tab-content hidden">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <div>
-              <label
-                class="block text-gray-700 font-medium mb-2"
-                data-lang="video-subject"
-              >
-                Main Subject
-              </label>
-              <input
-                type="text"
-                id="video-subject"
-                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                data-lang-placeholder="video-subject-placeholder"
-                placeholder="e.g., astronaut floating in space"
-              />
+    <!-- Riset Section -->
+    <section id="riset" class="py-20 bg-light">
+      <div class="container mx-auto px-4">
+        <div class="text-center mb-16">
+          <h2 class="text-3xl md:text-4xl font-bold text-primary mb-4">
+            Riset Analisa Sidik Jari
+          </h2>
+          <div class="w-20 h-1 bg-secondary mx-auto"></div>
+        </div>
+        <div class="flex flex-col md:flex-row-reverse items-center gap-10">
+          <div class="md:w-1/2">
+            <img
+              src="https://images.unsplash.com/photo-1581091226033-d5c48150dbaa?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80"
+              alt="Analisa Sidik Jari"
+              class="rounded-xl shadow-lg"
+            />
+          </div>
+          <div class="md:w-1/2">
+            <h3 class="text-2xl font-bold text-dark mb-4">
+              Ilmu yang Mendasari Analisis
+            </h3>
+            <p class="text-gray-700 mb-4">
+              Analisis sidik jari kami didasarkan pada riset ilmiah yang
+              menghubungkan pola sidik jari dengan perkembangan otak dan potensi
+              kecerdasan. Setiap pola sidik jari unik mencerminkan karakteristik
+              neurologis individu.
+            </p>
+            <p class="text-gray-700 mb-4">
+              Metode kami telah teruji secara ilmiah dan diakui oleh berbagai
+              ahli dalam bidang psikologi dan neurologi. Kami menggunakan
+              teknologi terkini untuk memastikan akurasi hasil analisis.
+            </p>
+            <ul class="list-disc pl-6 text-gray-700 space-y-2">
+              <li>Analisis pola sidik jari unik setiap individu</li>
+              <li>Korelasi dengan perkembangan otak dan kecerdasan</li>
+              <li>Laporan detail dengan rekomendasi pengembangan</li>
+              <li>Validasi ilmiah dan teknologi terkini</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Kecerdasan Majemuk Section -->
+    <section id="kecerdasan" class="py-20 bg-white">
+      <div class="container mx-auto px-4">
+        <div class="text-center mb-16">
+          <h2 class="text-3xl md:text-4xl font-bold text-primary mb-4">
+            Teori Kecerdasan Majemuk
+          </h2>
+          <div class="w-20 h-1 bg-secondary mx-auto"></div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div class="bg-light p-8 rounded-xl shadow-md text-center">
+            <div
+              class="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-6"
+            >
+              <i class="fas fa-music text-white text-2xl"></i>
             </div>
-            <div>
-              <label
-                class="block text-gray-700 font-medium mb-2"
-                data-lang="video-style"
+            <h3 class="text-xl font-bold text-dark mb-3">Musikal</h3>
+            <p class="text-gray-700">
+              Kemampuan menghasilkan dan mengapresiasi musik serta ritme.
+            </p>
+          </div>
+          <div class="bg-light p-8 rounded-xl shadow-md text-center">
+            <div
+              class="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-6"
+            >
+              <i class="fas fa-calculator text-white text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-dark mb-3">Logis-Matematis</h3>
+            <p class="text-gray-700">
+              Kemampuan berpikir secara logis, abstrak, dan numerik.
+            </p>
+          </div>
+          <div class="bg-light p-8 rounded-xl shadow-md text-center">
+            <div
+              class="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-6"
+            >
+              <i class="fas fa-users text-white text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-dark mb-3">Interpersonal</h3>
+            <p class="text-gray-700">
+              Kemampuan memahami dan berinteraksi dengan orang lain.
+            </p>
+          </div>
+          <div class="bg-light p-8 rounded-xl shadow-md text-center">
+            <div
+              class="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-6"
+            >
+              <i class="fas fa-user text-white text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-dark mb-3">Intrapersonal</h3>
+            <p class="text-gray-700">
+              Kemampuan memahami diri sendiri dan mengatur emosi.
+            </p>
+          </div>
+          <div class="bg-light p-8 rounded-xl shadow-md text-center">
+            <div
+              class="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-6"
+            >
+              <i class="fas fa-globe-asia text-white text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-dark mb-3">Naturalis</h3>
+            <p class="text-gray-700">
+              Kemampuan mengenali dan mengklasifikasikan pola alam.
+            </p>
+          </div>
+          <div class="bg-light p-8 rounded-xl shadow-md text-center">
+            <div
+              class="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-6"
+            >
+              <i class="fas fa-running text-white text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-dark mb-3">Kinestetik</h3>
+            <p class="text-gray-700">
+              Kemampuan menggunakan tubuh secara efektif untuk mengekspresikan
+              ide.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Paket Section -->
+    <section id="paket" class="py-20 bg-gray-100">
+      <div class="container mx-auto px-4">
+        <div class="text-center mb-16">
+          <h2 class="text-3xl md:text-4xl font-bold text-primary mb-4">
+            Paket Layanan Kami
+          </h2>
+          <div class="w-20 h-1 bg-secondary mx-auto"></div>
+          <p class="text-gray-700 max-w-2xl mx-auto mt-6">
+            Kami menyediakan berbagai paket layanan yang disesuaikan dengan
+            kebutuhan Anda. Semua paket dilengkapi dengan konsultasi gratis
+            seumur hidup.
+          </p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <!-- Paket Reguler -->
+          <div
+            class="package-card bg-white rounded-xl shadow-lg overflow-hidden transition duration-300"
+          >
+            <div class="bg-primary py-6">
+              <h3 class="text-2xl font-bold text-white text-center">
+                Paket Reguler
+              </h3>
+            </div>
+            <div class="p-8">
+              <div class="text-center mb-6">
+                <span class="text-4xl font-bold text-dark">Rp 350K</span>
+                <p class="text-gray-600">Per Orang</p>
+              </div>
+              <ul class="space-y-4 mb-8">
+                <li class="flex items-start">
+                  <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                  <span>Sertifikat Resmi</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                  <span>Gratis Konsultasi Seumur Hidup</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                  <span>Maksimal 2x Konsultasi/Bulan</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                  <span>Laporan Analisis Sidik Jari</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                  <span>Rekomendasi Pengembangan Diri</span>
+                </li>
+              </ul>
+              <a
+                href="#contact"
+                class="block text-center bg-primary hover:bg-dark text-white font-bold py-3 rounded-full transition duration-300"
+                >Pilih Paket Ini</a
               >
-                Video Style
-              </label>
-              <select
-                id="video-style"
-                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-              >
-                <option value="">Select a style</option>
-                <option value="realistic">Realistic</option>
-                <option value="cinematic">Cinematic</option>
-                <option value="animation">Animation</option>
-                <option value="stop motion">Stop Motion</option>
-                <option value="8-bit">8-bit Retro</option>
-                <option value="documentary">Documentary</option>
-                <option value="music-video">Music Video</option>
-                <option value="commercial">Commercial</option>
-              </select>
             </div>
           </div>
 
-          <!-- Camera & Shot Details -->
-          <div class="mb-6">
-            <h4
-              class="font-semibold text-gray-700 mb-3"
-              data-lang="camera-shot"
-            >
-              Camera & Shot
-            </h4>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-              <div>
-                <label
-                  class="block text-gray-700 font-medium mb-2"
-                  data-lang="camera-movement"
-                  >Camera Movement</label
-                >
-                <select
-                  id="camera-movement"
-                  class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                >
-                  <option value="">Static camera</option>
-                  <option value="slow-handheld">Slow handheld</option>
-                  <option value="smooth-dolly">Smooth dolly</option>
-                  <option value="crane-shot">Crane shot</option>
-                  <option value="tracking-shot">Tracking shot</option>
-                  <option value="push-in">Push in</option>
-                  <option value="pull-out">Pull out</option>
-                  <option value="pan-left">Pan left</option>
-                  <option value="pan-right">Pan right</option>
-                  <option value="tilt-up">Tilt up</option>
-                  <option value="tilt-down">Tilt down</option>
-                </select>
+          <!-- Paket Keluarga -->
+          <div
+            class="package-card bg-white rounded-xl shadow-lg overflow-hidden transition duration-300 border-2 border-secondary"
+          >
+            <div class="bg-secondary py-6">
+              <h3 class="text-2xl font-bold text-white text-center">
+                Paket Keluarga
+              </h3>
+            </div>
+            <div class="p-8">
+              <div class="text-center mb-6">
+                <span class="text-4xl font-bold text-dark">Rp 1.000K</span>
+                <p class="text-gray-600">Untuk 4 Orang (Keluarga)</p>
               </div>
-              <div>
-                <label
-                  class="block text-gray-700 font-medium mb-2"
-                  data-lang="video-composition"
-                  >Composition</label
-                >
-                <select
-                  id="video-composition"
-                  class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                >
-                  <option value="">Standard composition</option>
-                  <option value="medium-close-up">Medium close-up</option>
-                  <option value="extreme-close-up">Extreme close-up</option>
-                  <option value="wide-establishing">Wide establishing</option>
-                  <option value="over-shoulder">Over shoulder</option>
-                  <option value="birds-eye">Bird's eye view</option>
-                </select>
-              </div>
-              <div>
-                <label
-                  class="block text-gray-700 font-medium mb-2"
-                  data-lang="video-lens"
-                  >Video Lens</label
-                >
-                <select
-                  id="video-lens"
-                  class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                >
-                  <option value="">Standard lens</option>
-                  <option value="50mm-sony-venice">50mm Sony Venice 2</option>
-                  <option value="35mm-anamorphic">35mm Anamorphic</option>
-                  <option value="85mm-portrait">85mm Portrait</option>
-                  <option value="24mm-wide">24mm Wide angle</option>
-                </select>
-              </div>
+              <ul class="space-y-4 mb-8">
+                <li class="flex items-start">
+                  <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                  <span>Sertifikat Resmi untuk Setiap Anggota</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                  <span>Gratis Konsultasi Seumur Hidup</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                  <span>Maksimal 2x Konsultasi/Bulan per Orang</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                  <span>Laporan Analisis Sidik Jari untuk Setiap Orang</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                  <span>Rekomendasi Pengembangan Diri</span>
+                </li>
+              </ul>
+              <a
+                href="#contact"
+                class="block text-center bg-secondary hover:bg-primary text-white font-bold py-3 rounded-full transition duration-300"
+                >Pilih Paket Ini</a
+              >
             </div>
           </div>
 
-          <!-- Scene & Environment -->
-          <div class="mb-6">
-            <h4
-              class="font-semibold text-gray-700 mb-3"
-              data-lang="scene-environment"
-            >
-              Scene & Environment
-            </h4>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <div>
-                <label
-                  class="block text-gray-700 font-medium mb-2"
-                  data-lang="location"
-                  >Location</label
-                >
-                <input
-                  type="text"
-                  id="video-location"
-                  class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                  placeholder="e.g., abandoned theater dressing room"
+          <!-- Paket MoU -->
+          <div
+            class="package-card bg-white rounded-xl shadow-lg overflow-hidden transition duration-300"
+          >
+            <div class="bg-dark py-6">
+              <h3 class="text-2xl font-bold text-white text-center">
+                Paket MoU
+              </h3>
+            </div>
+            <div class="p-8">
+              <div class="text-center mb-6">
+                <span class="text-4xl font-bold text-dark">Hubungi Kami</span>
+              </div>
+              <ul class="space-y-4 mb-8">
+                <li class="flex items-start">
+                  <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                  <span>Semua Benefit Paket Reguler</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                  <span>Gratis Workshop Pengembangan Diri</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                  <span>Gratis Workshop Parenting</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                  <span>Akses ke Materi Premium</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                  <span>Diskon untuk Layanan Tambahan</span>
+                </li>
+              </ul>
+              <a
+                href="#contact"
+                class="block text-center bg-dark hover:bg-primary text-white font-bold py-3 rounded-full transition duration-300"
+                >Hubungi Tim Kami</a
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Testimoni Section -->
+    <section id="testimoni" class="py-20 bg-white">
+      <div class="container mx-auto px-4">
+        <div class="text-center mb-16">
+          <h2 class="text-3xl md:text-4xl font-bold text-primary mb-4">
+            Apa Kata Mereka
+          </h2>
+          <div class="w-20 h-1 bg-secondary mx-auto"></div>
+          <p class="text-gray-700 max-w-2xl mx-auto mt-6">
+            Kami bangga dengan kepuasan klien kami. Berikut adalah beberapa
+            testimoni dari mereka yang telah menggunakan layanan kami.
+          </p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div class="testimonial-card bg-light p-8 rounded-xl shadow-md">
+            <div class="flex items-center mb-6">
+              <div class="w-16 h-16 rounded-full overflow-hidden mr-4">
+                <img
+                  src="https://randomuser.me/api/portraits/women/32.jpg"
+                  alt="Testimoni"
+                  class="w-full h-full object-cover"
                 />
               </div>
               <div>
-                <label
-                  class="block text-gray-700 font-medium mb-2"
-                  data-lang="time-day"
-                  >Time of Day</label
-                >
-                <select
-                  id="time-day"
-                  class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                >
-                  <option value="">Any time</option>
-                  <option value="dawn">Dawn</option>
-                  <option value="morning">Morning</option>
-                  <option value="noon">Noon</option>
-                  <option value="afternoon">Afternoon</option>
-                  <option value="twilight">Twilight</option>
-                  <option value="night">Night</option>
-                  <option value="midnight">Midnight</option>
-                </select>
+                <h4 class="font-bold text-lg">Dewi Kartika</h4>
+                <p class="text-gray-600">Ibu Rumah Tangga</p>
               </div>
             </div>
-            <div>
-              <label
-                class="block text-gray-700 font-medium mb-2"
-                data-lang="environment-details"
-                >Environment Details</label
-              >
-              <textarea
-                id="environment-details"
-                rows="2"
-                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                placeholder="e.g., dusty mirror, hanging gowns, soft pink light haze"
-              ></textarea>
+            <p class="text-gray-700 italic">
+              "TesDIA membantu saya memahami potensi anak saya dengan lebih
+              baik. Rekomendasi pengembangannya sangat membantu dalam mendidik
+              anak."
+            </p>
+            <div class="flex text-yellow-400 mt-4">
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
             </div>
           </div>
-
-          <!-- Action & Visual Details -->
-          <div class="mb-6">
-            <label
-              class="block text-gray-700 font-medium mb-2"
-              data-lang="video-action"
-            >
-              Action/Scene Description
-            </label>
-            <textarea
-              id="video-action"
-              rows="3"
-              class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-              data-lang-placeholder="video-action-placeholder"
-              placeholder="Describe the main action, character movements, interactions..."
-            ></textarea>
-          </div>
-
-          <!-- Props -->
-          <div class="mb-6">
-            <label
-              class="block text-gray-700 font-medium mb-2"
-              data-lang="props"
-              >Props</label
-            >
-            <input
-              type="text"
-              id="video-props"
-              class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-              placeholder="e.g., old vanity mirror, perfume bottle, dim string lights"
-            />
-          </div>
-
-          <!-- Voice & Audio Section -->
-          <div class="mb-6 bg-gray-50 p-4 rounded-lg">
-            <h4
-              class="font-semibold text-gray-700 mb-3"
-              data-lang="voice-audio"
-            >
-              Voice & Audio
-            </h4>
-
-            <!-- Voice Type Selection -->
-            <div class="mb-4">
-              <label
-                class="block text-gray-700 font-medium mb-2"
-                data-lang="voice-type"
-                >Voice Type</label
-              >
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div
-                  class="voice-type-card p-3 border rounded-lg cursor-pointer"
-                  data-voice-type="character"
-                >
-                  <div class="flex items-center">
-                    <i
-                      class="fas fa-user-circle text-blue-500 mr-3 text-xl"
-                    ></i>
-                    <div>
-                      <h5 class="font-medium" data-lang="character-voice">
-                        Character Voice
-                      </h5>
-                      <p
-                        class="text-sm text-gray-600"
-                        data-lang="character-voice-desc"
-                      >
-                        The character in the video speaks
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                <div
-                  class="voice-type-card p-3 border rounded-lg cursor-pointer"
-                  data-voice-type="voiceover"
-                >
-                  <div class="flex items-center">
-                    <i
-                      class="fas fa-microphone text-purple-500 mr-3 text-xl"
-                    ></i>
-                    <div>
-                      <h5 class="font-medium" data-lang="voiceover">
-                        Voice Over
-                      </h5>
-                      <p
-                        class="text-sm text-gray-600"
-                        data-lang="voiceover-desc"
-                      >
-                        Separate narrator voice
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Voice Details -->
-            <div
-              id="voice-details"
-              class="grid grid-cols-1 md:grid-cols-2 gap-4"
-            >
-              <div>
-                <label
-                  class="block text-gray-700 font-medium mb-2"
-                  data-lang="voice-tone"
-                  >Voice Tone</label
-                >
-                <select
-                  id="voice-tone"
-                  class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                >
-                  <option value="">Natural tone</option>
-                  <option value="whispering">Whispering</option>
-                  <option value="confident">Confident</option>
-                  <option value="emotional">Emotional</option>
-                  <option value="mysterious">Mysterious</option>
-                  <option value="energetic">Energetic</option>
-                  <option value="calm">Calm</option>
-                  <option value="dramatic">Dramatic</option>
-                </select>
+          <div class="testimonial-card bg-light p-8 rounded-xl shadow-md">
+            <div class="flex items-center mb-6">
+              <div class="w-16 h-16 rounded-full overflow-hidden mr-4">
+                <img
+                  src="https://randomuser.me/api/portraits/men/54.jpg"
+                  alt="Testimoni"
+                  class="w-full h-full object-cover"
+                />
               </div>
               <div>
-                <label
-                  class="block text-gray-700 font-medium mb-2"
-                  data-lang="delivery-style"
-                  >Delivery Style</label
-                >
-                <select
-                  id="delivery-style"
-                  class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                >
-                  <option value="">Normal delivery</option>
-                  <option value="whispered-falsetto">Whispered falsetto</option>
-                  <option value="spoken-word">Spoken word rhythm</option>
-                  <option value="melodic">Melodic</option>
-                  <option value="rhythmic">Rhythmic</option>
-                  <option value="airy-delay">Airy with delay</option>
-                </select>
+                <h4 class="font-bold text-lg">Budi Santoso</h4>
+                <p class="text-gray-600">Pengusaha</p>
               </div>
             </div>
-
-            <!-- Dialogue/Text -->
-            <div class="mt-4">
-              <label
-                class="block text-gray-700 font-medium mb-2"
-                data-lang="dialogue-text"
-                >Dialogue/Text</label
-              >
-              <textarea
-                id="dialogue-text"
-                rows="3"
-                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                placeholder="Enter the text/dialogue to be spoken..."
-              ></textarea>
-            </div>
-
-            <!-- Character Name (only for character voice) -->
-            <div id="character-name-field" class="mt-4 hidden">
-              <label
-                class="block text-gray-700 font-medium mb-2"
-                data-lang="character-name"
-                >Character Name</label
-              >
-              <input
-                type="text"
-                id="character-name"
-                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                placeholder="e.g., The Dream Confessor"
-              />
+            <p class="text-gray-700 italic">
+              "Analisis sidik jari memberikan wawasan yang luar biasa tentang
+              kekuatan dan kelemahan saya. Sangat membantu dalam pengambilan
+              keputusan bisnis."
+            </p>
+            <div class="flex text-yellow-400 mt-4">
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
             </div>
           </div>
-
-          <!-- Technical Parameters -->
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div>
-              <label
-                class="block text-gray-700 font-medium mb-2"
-                data-lang="video-duration"
-              >
-                Duration (seconds)
-              </label>
-              <input
-                type="number"
-                id="video-duration"
-                min="1"
-                max="120"
-                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                value="10"
-              />
-            </div>
-            <div>
-              <label
-                class="block text-gray-700 font-medium mb-2"
-                data-lang="video-fps"
-              >
-                Frame Rate
-              </label>
-              <select
-                id="video-fps"
-                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-              >
-                <option value="24">24 fps (Cinematic)</option>
-                <option value="30" selected>30 fps (Standard)</option>
-                <option value="60">60 fps (Smooth)</option>
-              </select>
-            </div>
-            <div>
-              <label
-                class="block text-gray-700 font-medium mb-2"
-                data-lang="video-mood"
-              >
-                Mood
-              </label>
-              <select
-                id="video-mood"
-                class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-              >
-                <option value="">Any mood</option>
-                <option value="epic">Epic</option>
-                <option value="calm">Calm</option>
-                <option value="mysterious">Mysterious</option>
-                <option value="energetic">Energetic</option>
-                <option value="dreamlike">Dreamlike</option>
-                <option value="intimate">Intimate</option>
-                <option value="melancholic">Melancholic</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- Cinematography -->
-          <div class="mb-6">
-            <h4
-              class="font-semibold text-gray-700 mb-3"
-              data-lang="cinematography"
-            >
-              Cinematography
-            </h4>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label
-                  class="block text-gray-700 font-medium mb-2"
-                  data-lang="lighting-style"
-                  >Lighting Style</label
-                >
-                <select
-                  id="lighting-style"
-                  class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                >
-                  <option value="">Standard lighting</option>
-                  <option value="low-key-pastel">
-                    Low key pastel lighting
-                  </option>
-                  <option value="dramatic-shadows">Dramatic shadows</option>
-                  <option value="soft-diffused">Soft diffused</option>
-                  <option value="neon-glow">Neon glow</option>
-                  <option value="rim-lighting">Rim lighting</option>
-                  <option value="backlit-silhouette">Backlit silhouette</option>
-                </select>
+          <div class="testimonial-card bg-light p-8 rounded-xl shadow-md">
+            <div class="flex items-center mb-6">
+              <div class="w-16 h-16 rounded-full overflow-hidden mr-4">
+                <img
+                  src="https://randomuser.me/api/portraits/women/68.jpg"
+                  alt="Testimoni"
+                  class="w-full h-full object-cover"
+                />
               </div>
               <div>
-                <label
-                  class="block text-gray-700 font-medium mb-2"
-                  data-lang="film-grain"
-                  >Film Grain/Texture</label
-                >
-                <select
-                  id="film-grain"
-                  class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                >
-                  <option value="">No grain</option>
-                  <option value="soft-grain-pastels">
-                    Soft grain with pastels
-                  </option>
-                  <option value="vintage-film">Vintage film grain</option>
-                  <option value="digital-noise">Digital noise</option>
-                  <option value="16mm-film">16mm film look</option>
-                </select>
+                <h4 class="font-bold text-lg">Rina Putri</h4>
+                <p class="text-gray-600">Guru</p>
               </div>
             </div>
+            <p class="text-gray-700 italic">
+              "Saya menggunakan paket keluarga untuk keluarga saya. Hasilnya
+              sangat membantu dalam memahami karakteristik masing-masing anggota
+              keluarga."
+            </p>
+            <div class="flex text-yellow-400 mt-4">
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star-half-alt"></i>
+            </div>
           </div>
-
-          <!-- Background Music -->
-          <div class="mb-6">
-            <label
-              class="block text-gray-700 font-medium mb-2"
-              data-lang="background-music"
-              >Background Music</label
-            >
-            <input
-              type="text"
-              id="background-music"
-              class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-              placeholder="e.g., soft ambient reverb, faint vinyl crackle, low synth hum"
-            />
-          </div>
-        </div>
-
-        <!-- Learning Prompts Form (unchanged for brevity) -->
-        <div id="learning-form" class="tab-content hidden">
-          <!-- Keep the existing learning form content -->
-          <div class="mb-6">
-            <label
-              class="block text-gray-700 font-medium mb-2"
-              data-lang="learning-topic"
-            >
-              Learning Topic
-            </label>
-            <input
-              type="text"
-              id="learning-topic"
-              class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-              data-lang-placeholder="learning-topic-placeholder"
-              placeholder="e.g., Quantum Mechanics, Renaissance Art"
-            />
-          </div>
-
-          <div class="mb-6">
-            <label
-              class="block text-gray-700 font-medium mb-2"
-              data-lang="learning-level"
-            >
-              Knowledge Level
-            </label>
-            <select
-              id="learning-level"
-              class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-            >
-              <option value="beginner" data-lang="level-beginner">
-                Beginner (Basic Concepts)
-              </option>
-              <option value="intermediate" data-lang="level-intermediate">
-                Intermediate (Detailed Explanation)
-              </option>
-              <option value="advanced" data-lang="level-advanced">
-                Advanced (Technical Depth)
-              </option>
-            </select>
-          </div>
-
-          <div class="mb-6">
-            <label
-              class="block text-gray-700 font-medium mb-2"
-              data-lang="learning-objective"
-            >
-              Learning Objective
-            </label>
-            <textarea
-              id="learning-objective"
-              rows="3"
-              class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-              data-lang-placeholder="learning-objective-placeholder"
-              placeholder="What should the learner understand after this explanation?"
-            ></textarea>
-          </div>
-        </div>
-
-        <div
-          class="flex flex-col sm:flex-row justify-between items-center mt-8 gap-4"
-        >
-          <button
-            id="generate-btn"
-            class="gradient-bg text-white px-6 py-3 rounded-lg font-medium hover:opacity-90 transition flex items-center"
-          >
-            <i class="fas fa-magic mr-2"></i>
-            <span data-lang="generate-btn">Generate JSON Prompt</span>
-          </button>
-          <button
-            id="copy-btn"
-            class="bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-medium hover:bg-gray-300 transition flex items-center hidden"
-          >
-            <i class="fas fa-copy mr-2"></i>
-            <span data-lang="copy-btn">Copy to Clipboard</span>
-          </button>
-          <button
-            id="reset-btn"
-            class="border border-gray-300 text-gray-700 px-6 py-3 rounded-lg font-medium hover:bg-gray-50 transition flex items-center"
-          >
-            <i class="fas fa-redo mr-2"></i>
-            <span data-lang="reset-btn">Reset Form</span>
-          </button>
         </div>
       </div>
+    </section>
 
-      <div
-        id="result-container"
-        class="bg-white rounded-xl shadow-md p-6 hidden"
-      >
-        <div class="flex justify-between items-center mb-4">
-          <h3 class="text-xl font-bold text-gray-800" data-lang="result-title">
-            Generated JSON Prompt
-          </h3>
-          <button id="close-result" class="text-gray-500 hover:text-gray-700">
-            <i class="fas fa-times"></i>
-          </button>
-        </div>
-        <div class="json-display p-4">
-          <pre id="json-output" class="whitespace-pre-wrap"></pre>
-        </div>
-        <div class="mt-4 text-sm text-gray-600">
-          <p>
-            <i class="fas fa-info-circle mr-2"></i>
-            <span data-lang="result-info"
-              >Use this JSON structure when making API calls to AI services for
-              consistent and precise results.</span
-            >
+    <!-- Kemitraan Section -->
+    <section id="kemitraan" class="py-20 bg-light">
+      <div class="container mx-auto px-4">
+        <div class="text-center mb-16">
+          <h2 class="text-3xl md:text-4xl font-bold text-primary mb-4">
+            Program Kemitraan
+          </h2>
+          <div class="w-20 h-1 bg-secondary mx-auto"></div>
+          <p class="text-gray-700 max-w-2xl mx-auto mt-6">
+            Bergabunglah dengan kami dalam memperluas manfaat TesDIA ke seluruh
+            Indonesia. Kami menawarkan program kemitraan yang menguntungkan.
           </p>
         </div>
+        <div class="flex flex-col md:flex-row items-center gap-10">
+          <div class="md:w-1/2">
+            <h3 class="text-2xl font-bold text-dark mb-4">
+              Mengapa Bergabung dengan Kami?
+            </h3>
+            <ul class="space-y-4 mb-8">
+              <li class="flex items-start">
+                <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                <span>Pelatihan dan sertifikasi lengkap</span>
+              </li>
+              <li class="flex items-start">
+                <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                <span>Dukungan pemasaran dan promosi</span>
+              </li>
+              <li class="flex items-start">
+                <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                <span>Sistem manajemen terintegrasi</span>
+              </li>
+              <li class="flex items-start">
+                <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                <span>Margin keuntungan yang kompetitif</span>
+              </li>
+              <li class="flex items-start">
+                <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                <span>Akses ke materi dan pelatihan terbaru</span>
+              </li>
+            </ul>
+            <a
+              href="#contact"
+              class="inline-block bg-primary hover:bg-dark text-white font-bold py-3 px-6 rounded-full transition duration-300"
+              >Hubungi Kami</a
+            >
+          </div>
+          <div class="md:w-1/2">
+            <img
+              src="https://images.unsplash.com/photo-1552664730-d307ca884978?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80"
+              alt="Kemitraan"
+              class="rounded-xl shadow-lg"
+            />
+          </div>
+        </div>
       </div>
-    </main>
+    </section>
+
+    <!-- Tentang Kami Section -->
+    <section id="tentang" class="py-20 bg-white">
+      <div class="container mx-auto px-4">
+        <div class="text-center mb-16">
+          <h2 class="text-3xl md:text-4xl font-bold text-primary mb-4">
+            Tentang Kami
+          </h2>
+          <div class="w-20 h-1 bg-secondary mx-auto"></div>
+        </div>
+        <div class="flex flex-col md:flex-row items-center gap-10">
+          <div class="md:w-1/2">
+            <img
+              src="https://images.unsplash.com/photo-1497366754035-f200968a6e72?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80"
+              alt="Tentang Kami"
+              class="rounded-xl shadow-lg"
+            />
+          </div>
+          <div class="md:w-1/2">
+            <h3 class="text-2xl font-bold text-dark mb-4">
+              Visi & Misi TesDIA Bandung
+            </h3>
+            <p class="text-gray-700 mb-4">
+              Kami berkomitmen untuk membantu masyarakat Indonesia mengenal
+              potensi diri mereka melalui pendekatan ilmiah dan profesional.
+            </p>
+            <div class="mb-6">
+              <h4 class="font-bold text-primary mb-2">Visi Kami:</h4>
+              <p class="text-gray-700">
+                Menjadi lembaga terdepan dalam pengembangan potensi diri
+                berbasis analisis sidik jari di Indonesia.
+              </p>
+            </div>
+            <div class="mb-6">
+              <h4 class="font-bold text-primary mb-2">Misi Kami:</h4>
+              <ul class="list-disc pl-6 text-gray-700 space-y-2">
+                <li>
+                  Menyediakan layanan analisis sidik jari yang akurat dan ilmiah
+                </li>
+                <li>
+                  Mengembangkan metode pengembangan potensi diri yang efektif
+                </li>
+                <li>
+                  Meningkatkan kesadaran masyarakat tentang pentingnya mengenal
+                  diri
+                </li>
+                <li>
+                  Bermitra dengan berbagai institusi untuk memperluas manfaat
+                  layanan kami
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-20 bg-gray-100">
+      <div class="container mx-auto px-4">
+        <div class="text-center mb-16">
+          <h2 class="text-3xl md:text-4xl font-bold text-primary mb-4">
+            Hubungi Kami
+          </h2>
+          <div class="w-20 h-1 bg-secondary mx-auto"></div>
+          <p class="text-gray-700 max-w-2xl mx-auto mt-6">
+            Tertarik dengan layanan kami? Hubungi kami sekarang untuk informasi
+            lebih lanjut.
+          </p>
+        </div>
+        <div class="flex flex-col md:flex-row gap-10">
+          <div class="md:w-1/2">
+            <form class="bg-white p-8 rounded-xl shadow-md">
+              <div class="mb-6">
+                <label class="block text-gray-700 mb-2" for="name"
+                  >Nama Lengkap</label
+                >
+                <input
+                  type="text"
+                  id="name"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+              <div class="mb-6">
+                <label class="block text-gray-700 mb-2" for="email"
+                  >Email</label
+                >
+                <input
+                  type="email"
+                  id="email"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+              <div class="mb-6">
+                <label class="block text-gray-700 mb-2" for="phone"
+                  >Nomor Telepon</label
+                >
+                <input
+                  type="tel"
+                  id="phone"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+              <div class="mb-6">
+                <label class="block text-gray-700 mb-2" for="message"
+                  >Pesan</label
+                >
+                <textarea
+                  id="message"
+                  rows="5"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                ></textarea>
+              </div>
+              <button
+                type="submit"
+                class="w-full bg-primary hover:bg-dark text-white font-bold py-3 rounded-lg transition duration-300"
+              >
+                Kirim Pesan
+              </button>
+            </form>
+          </div>
+          <div class="md:w-1/2">
+            <div class="bg-white p-8 rounded-xl shadow-md h-full">
+              <h3 class="text-2xl font-bold text-dark mb-6">
+                Informasi Kontak
+              </h3>
+              <div class="space-y-6">
+                <div class="flex items-start">
+                  <div
+                    class="w-12 h-12 bg-primary rounded-full flex items-center justify-center mr-4"
+                  >
+                    <i class="fas fa-map-marker-alt text-white"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-bold text-lg text-dark">Alamat</h4>
+                    <p class="text-gray-700">
+                      Jl. Diponegoro No. 25, Bandung, Jawa Barat
+                    </p>
+                  </div>
+                </div>
+                <div class="flex items-start">
+                  <div
+                    class="w-12 h-12 bg-primary rounded-full flex items-center justify-center mr-4"
+                  >
+                    <i class="fas fa-phone-alt text-white"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-bold text-lg text-dark">Telepon</h4>
+                    <p class="text-gray-700">+62 22 1234 5678</p>
+                  </div>
+                </div>
+                <div class="flex items-start">
+                  <div
+                    class="w-12 h-12 bg-primary rounded-full flex items-center justify-center mr-4"
+                  >
+                    <i class="fas fa-envelope text-white"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-bold text-lg text-dark">Email</h4>
+                    <p class="text-gray-700">info@tesdiabandung.com</p>
+                  </div>
+                </div>
+                <div class="flex items-start">
+                  <div
+                    class="w-12 h-12 bg-primary rounded-full flex items-center justify-center mr-4"
+                  >
+                    <i class="fas fa-clock text-white"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-bold text-lg text-dark">Jam Operasional</h4>
+                    <p class="text-gray-700">Senin - Jumat: 09:00 - 17:00</p>
+                    <p class="text-gray-700">Sabtu: 09:00 - 14:00</p>
+                  </div>
+                </div>
+              </div>
+              <div class="mt-10">
+                <h4 class="font-bold text-lg text-dark mb-4">Ikuti Kami</h4>
+                <div class="flex space-x-4">
+                  <a
+                    href="#"
+                    class="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white hover:bg-dark transition duration-300"
+                  >
+                    <i class="fab fa-facebook-f"></i>
+                  </a>
+                  <a
+                    href="#"
+                    class="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white hover:bg-dark transition duration-300"
+                  >
+                    <i class="fab fa-instagram"></i>
+                  </a>
+                  <a
+                    href="#"
+                    class="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white hover:bg-dark transition duration-300"
+                  >
+                    <i class="fab fa-twitter"></i>
+                  </a>
+                  <a
+                    href="#"
+                    class="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white hover:bg-dark transition duration-300"
+                  >
+                    <i class="fab fa-youtube"></i>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-12">
+      <div class="container mx-auto px-4">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div>
+            <h3 class="text-2xl font-bold mb-4 flex items-center">
+              <i class="fas fa-brain mr-2"></i>
+              <span>TesDIA Bandung</span>
+            </h3>
+            <p class="text-gray-300 mb-4">
+              Mengenal potensi diri melalui analisis sidik jari dan teori
+              kecerdasan majemuk.
+            </p>
+            <div class="flex space-x-4">
+              <a href="#" class="text-gray-300 hover:text-white"
+                ><i class="fab fa-facebook-f"></i
+              ></a>
+              <a href="#" class="text-gray-300 hover:text-white"
+                ><i class="fab fa-instagram"></i
+              ></a>
+              <a href="#" class="text-gray-300 hover:text-white"
+                ><i class="fab fa-twitter"></i
+              ></a>
+              <a href="#" class="text-gray-300 hover:text-white"
+                ><i class="fab fa-youtube"></i
+              ></a>
+            </div>
+          </div>
+          <div>
+            <h4 class="text-lg font-bold mb-4">Tautan Cepat</h4>
+            <ul class="space-y-2">
+              <li>
+                <a href="#home" class="text-gray-300 hover:text-white">Home</a>
+              </li>
+              <li>
+                <a href="#pendahuluan" class="text-gray-300 hover:text-white"
+                  >Pendahuluan</a
+                >
+              </li>
+              <li>
+                <a href="#riset" class="text-gray-300 hover:text-white"
+                  >Riset Analisa</a
+                >
+              </li>
+              <li>
+                <a href="#kecerdasan" class="text-gray-300 hover:text-white"
+                  >Kecerdasan Majemuk</a
+                >
+              </li>
+              <li>
+                <a href="#testimoni" class="text-gray-300 hover:text-white"
+                  >Testimoni</a
+                >
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="text-lg font-bold mb-4">Layanan</h4>
+            <ul class="space-y-2">
+              <li>
+                <a href="#paket" class="text-gray-300 hover:text-white"
+                  >Paket Reguler</a
+                >
+              </li>
+              <li>
+                <a href="#paket" class="text-gray-300 hover:text-white"
+                  >Paket Keluarga</a
+                >
+              </li>
+              <li>
+                <a href="#paket" class="text-gray-300 hover:text-white"
+                  >Paket MoU</a
+                >
+              </li>
+              <li>
+                <a href="#kemitraan" class="text-gray-300 hover:text-white"
+                  >Kemitraan</a
+                >
+              </li>
+              <li>
+                <a href="#tentang" class="text-gray-300 hover:text-white"
+                  >Tentang Kami</a
+                >
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="text-lg font-bold mb-4">Kontak</h4>
+            <ul class="space-y-2 text-gray-300">
+              <li class="flex items-start">
+                <i class="fas fa-map-marker-alt mt-1 mr-3"></i>
+                <span>Jl. Diponegoro No. 25, Bandung</span>
+              </li>
+              <li class="flex items-center">
+                <i class="fas fa-phone-alt mr-3"></i>
+                <span>+62 22 1234 5678</span>
+              </li>
+              <li class="flex items-center">
+                <i class="fas fa-envelope mr-3"></i>
+                <span>info@tesdiabandung.com</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div
+          class="border-t border-gray-700 mt-10 pt-6 text-center text-gray-400"
+        >
+          <p>&copy; 2023 TesDIA Bandung. All rights reserved.</p>
+        </div>
+      </div>
+    </footer>
 
     <script>
-      // Language translations
-      const translations = {
-        en: {
-          "chat-ai": "AI Chat",
-          "chat-title": "AI Assistant",
-          "chat-welcome":
-            "Hi! I'm your AI assistant. Describe what kind of video or image you want to create, and I'll help fill out the form automatically!",
-          "chat-placeholder": "Describe your video/image idea...",
-          "api-key-label": "Gemini API Key (Optional):",
-          "api-key-note": "Leave empty to use demo responses",
-          "generate-title": "Generate Precise AI Prompts",
-          "generate-desc":
-            "Create structured JSON prompts for Text-to-Image, Text-to-Video, and learning applications.",
-          "tab-image": "Text-to-Image",
-          "tab-video": "Text-to-Video",
-          "tab-learning": "Learning Prompts",
-          "generate-btn": "Generate JSON Prompt",
-          "copy-btn": "Copy to Clipboard",
-          "reset-btn": "Reset Form",
-          "result-title": "Generated JSON Prompt",
-          "result-info":
-            "Use this JSON structure when making API calls to AI services for consistent and precise results.",
-          "voice-type": "Voice Type",
-          "character-voice": "Character Voice",
-          "character-voice-desc": "The character in the video speaks",
-          voiceover: "Voice Over",
-          "voiceover-desc": "Separate narrator voice",
-          "dialogue-text": "Dialogue/Text",
-          "character-name": "Character Name",
-        },
-        id: {
-          "chat-ai": "Chat AI",
-          "chat-title": "Asisten AI",
-          "chat-welcome":
-            "Hai! Saya asisten AI Anda. Jelaskan video atau gambar seperti apa yang ingin Anda buat, dan saya akan membantu mengisi formulir secara otomatis!",
-          "chat-placeholder": "Jelaskan ide video/gambar Anda...",
-          "api-key-label": "Kunci API Gemini (Opsional):",
-          "api-key-note": "Kosongkan untuk menggunakan respons demo",
-          "generate-title": "Buat Prompt AI yang Presisi",
-          "generate-desc":
-            "Buat prompt JSON terstruktur untuk Text-to-Image, Text-to-Video, dan aplikasi pembelajaran.",
-          "tab-image": "Teks-ke-Gambar",
-          "tab-video": "Teks-ke-Video",
-          "tab-learning": "Prompt Pembelajaran",
-          "generate-btn": "Buat JSON Prompt",
-          "copy-btn": "Salin ke Clipboard",
-          "reset-btn": "Reset Formulir",
-          "result-title": "JSON Prompt yang Dihasilkan",
-          "result-info":
-            "Gunakan struktur JSON ini saat memanggil API layanan AI untuk hasil yang konsisten dan presisi.",
-          "voice-type": "Tipe Suara",
-          "character-voice": "Suara Karakter",
-          "character-voice-desc": "Karakter dalam video yang berbicara",
-          voiceover: "Voice Over",
-          "voiceover-desc": "Suara narator terpisah",
-          "dialogue-text": "Dialog/Teks",
-          "character-name": "Nama Karakter",
-        },
-      };
-
-      let currentLang = "en";
-
-      // Language switching
+      // Mobile menu toggle
       document
-        .getElementById("lang-en")
-        .addEventListener("click", () => switchLanguage("en"));
-      document
-        .getElementById("lang-id")
-        .addEventListener("click", () => switchLanguage("id"));
-
-      function switchLanguage(lang) {
-        currentLang = lang;
-
-        // Update button states
-        document.querySelectorAll(".lang-btn").forEach((btn) => {
-          btn.classList.remove("bg-white", "text-blue-600");
-          btn.classList.add("text-white");
+        .querySelector(".mobile-menu-button")
+        .addEventListener("click", function () {
+          document.querySelector(".mobile-menu").classList.toggle("hidden");
         });
 
-        document
-          .getElementById(`lang-${lang}`)
-          .classList.add("bg-white", "text-blue-600");
-        document.getElementById(`lang-${lang}`).classList.remove("text-white");
-
-        // Update all translatable elements
-        document.querySelectorAll("[data-lang]").forEach((element) => {
-          const key = element.getAttribute("data-lang");
-          if (translations[lang] && translations[lang][key]) {
-            element.textContent = translations[lang][key];
-          }
+      // Close mobile menu when clicking on a link
+      document.querySelectorAll(".mobile-menu a").forEach((link) => {
+        link.addEventListener("click", () => {
+          document.querySelector(".mobile-menu").classList.add("hidden");
         });
+      });
 
-        // Update placeholders
-        document
-          .querySelectorAll("[data-lang-placeholder]")
-          .forEach((element) => {
-            const key = element.getAttribute("data-lang-placeholder");
-            if (translations[lang] && translations[lang][key]) {
-              element.placeholder = translations[lang][key];
-            }
-          });
-      }
-
-      // Voice type selection
-      document.querySelectorAll(".voice-type-card").forEach((card) => {
-        card.addEventListener("click", function () {
-          // Remove selection from all cards
-          document
-            .querySelectorAll(".voice-type-card")
-            .forEach((c) => c.classList.remove("selected"));
-
-          // Add selection to clicked card
-          this.classList.add("selected");
-
-          // Show/hide character name field
-          const voiceType = this.getAttribute("data-voice-type");
-          const characterNameField = document.getElementById(
-            "character-name-field"
-          );
-
-          if (voiceType === "character") {
-            characterNameField.classList.remove("hidden");
-          } else {
-            characterNameField.classList.add("hidden");
+      // Smooth scrolling for anchor links
+      document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+        anchor.addEventListener("click", function (e) {
+          e.preventDefault();
+          const target = document.querySelector(this.getAttribute("href"));
+          if (target) {
+            window.scrollTo({
+              top: target.offsetTop - 80,
+              behavior: "smooth",
+            });
           }
         });
       });
 
-      // AI Chat functionality
-      document
-        .getElementById("ai-chat-toggle")
-        .addEventListener("click", () => {
-          document.getElementById("ai-chat-modal").classList.remove("hidden");
-        });
+      // Update active nav link on scroll
+      window.addEventListener("scroll", function () {
+        const sections = document.querySelectorAll("section");
+        const navLinks = document.querySelectorAll(".nav-link");
 
-      document.getElementById("close-chat").addEventListener("click", () => {
-        document.getElementById("ai-chat-modal").classList.add("hidden");
-      });
+        let current = "";
 
-      document
-        .getElementById("send-chat")
-        .addEventListener("click", sendChatMessage);
-      document
-        .getElementById("chat-input")
-        .addEventListener("keypress", function (e) {
-          if (e.key === "Enter") {
-            sendChatMessage();
+        sections.forEach((section) => {
+          const sectionTop = section.offsetTop;
+          const sectionHeight = section.clientHeight;
+
+          if (pageYOffset >= sectionTop - 100) {
+            current = section.getAttribute("id");
           }
         });
 
-      function sendChatMessage() {
-        const input = document.getElementById("chat-input");
-        const message = input.value.trim();
-
-        if (!message) return;
-
-        // Add user message to chat
-        addChatMessage(message, "user");
-        input.value = "";
-
-        // Simulate AI response (you can integrate with real AI API here)
-        setTimeout(() => {
-          const aiResponse = generateAIResponse(message);
-          addChatMessage(aiResponse.message, "ai");
-
-          // Auto-fill form if AI provides structured data
-          if (aiResponse.formData) {
-            fillFormWithAIData(aiResponse.formData);
+        navLinks.forEach((link) => {
+          link.classList.remove("current-page");
+          if (link.getAttribute("href") === `#${current}`) {
+            link.classList.add("current-page");
           }
-        }, 1000);
-      }
-
-      function addChatMessage(message, sender) {
-        const chatMessages = document.getElementById("chat-messages");
-        const messageDiv = document.createElement("div");
-        messageDiv.className = `chat-bubble mb-3 p-3 rounded-lg ${
-          sender === "user" ? "bg-blue-500 text-white ml-8" : "bg-gray-100 mr-8"
-        }`;
-        messageDiv.textContent = message;
-        chatMessages.appendChild(messageDiv);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-      }
-
-      function generateAIResponse(userMessage) {
-        // Demo AI responses - replace with real AI API integration
-        const responses = {
-          "video dream woman": {
-            message:
-              "I'll help you create a dreamy video with a woman character. Let me fill out the form for you!",
-            formData: {
-              tab: "video",
-              subject: "Delicate woman with pale lavender bob",
-              style: "cinematic",
-              location: "abandoned theater dressing room",
-              action:
-                "she leans close to camera, whispering verses like secrets",
-              voiceType: "character",
-              characterName: "The Dream Confessor",
-              dialogue:
-                "I left my name inside the silence, stitched it in shadows, drowned it in diamonds.",
-              mood: "dreamlike",
-            },
-          },
-          "futuristic city": {
-            message: "Creating a futuristic cityscape for you! Check the form.",
-            formData: {
-              tab: "image",
-              subject: "futuristic city at sunset",
-              style: "cyberpunk",
-              lighting: "neon",
-              color: "blue-purple",
-            },
-          },
-        };
-
-        // Simple keyword matching - you can make this more sophisticated
-        for (let key in responses) {
-          if (userMessage.toLowerCase().includes(key)) {
-            return responses[key];
-          }
-        }
-
-        return {
-          message:
-            currentLang === "id"
-              ? "Maaf, saya tidak mengerti. Bisakah Anda jelaskan lebih detail tentang video atau gambar yang ingin Anda buat?"
-              : "I'm sorry, I didn't understand that. Could you please describe what kind of video or image you want to create in more detail?",
-        };
-      }
-
-      function fillFormWithAIData(formData) {
-        // Switch to appropriate tab
-        if (formData.tab) {
-          document.getElementById(`${formData.tab}-tab`).click();
-        }
-
-        // Fill form fields
-        Object.keys(formData).forEach((key) => {
-          if (key === "tab") return;
-
-          const element =
-            document.getElementById(`${formData.tab}-${key}`) ||
-            document.getElementById(
-              key.replace(/([A-Z])/g, "-$1").toLowerCase()
-            );
-
-          if (element) {
-            if (element.type === "checkbox") {
-              element.checked = formData[key];
-            } else {
-              element.value = formData[key];
-            }
-          }
-        });
-
-        // Handle voice type selection
-        if (formData.voiceType) {
-          document
-            .querySelector(`[data-voice-type="${formData.voiceType}"]`)
-            .click();
-        }
-
-        // Close chat modal
-        document.getElementById("ai-chat-modal").classList.add("hidden");
-      }
-
-      // Tab switching functionality
-      const tabs = {
-        "image-tab": "image-form",
-        "video-tab": "video-form",
-        "learning-tab": "learning-form",
-      };
-
-      Object.keys(tabs).forEach((tabId) => {
-        document.getElementById(tabId).addEventListener("click", () => {
-          // Reset all tabs
-          Object.keys(tabs).forEach((key) => {
-            document.getElementById(key).classList.remove("tab-active");
-            document.getElementById(key).classList.add("text-gray-600");
-            document.getElementById(tabs[key]).classList.add("hidden");
-          });
-
-          // Activate selected tab
-          document.getElementById(tabId).classList.add("tab-active");
-          document.getElementById(tabId).classList.remove("text-gray-600");
-          document.getElementById(tabs[tabId]).classList.remove("hidden");
         });
       });
-
-      // Generate JSON button
-      document
-        .getElementById("generate-btn")
-        .addEventListener("click", generateJson);
-
-      // Copy button
-      document
-        .getElementById("copy-btn")
-        .addEventListener("click", copyToClipboard);
-
-      // Reset button
-      document.getElementById("reset-btn").addEventListener("click", resetForm);
-
-      // Close result button
-      document.getElementById("close-result").addEventListener("click", () => {
-        document.getElementById("result-container").classList.add("hidden");
-      });
-
-      function generateJson() {
-        let jsonData = {};
-        const activeTab = document.querySelector(".tab-active").id;
-
-        if (activeTab === "image-tab") {
-          jsonData = {
-            style: document.getElementById("image-style").value || "realistic",
-            shot: {
-              composition: buildComposition(),
-              camera_angle: document.getElementById("camera-angle").value,
-              lens: document.getElementById("lens-type").value,
-              depth_of_field: document.getElementById("depth-field").value,
-            },
-            subject: {
-              description: document.getElementById("image-subject").value,
-              details: document.getElementById("image-details").value,
-            },
-            visual_details: {
-              lighting: document.getElementById("image-lighting").value,
-              color_palette: document.getElementById("image-color").value,
-              aspect_ratio: document.getElementById("image-aspect").value,
-            },
-          };
-        } else if (activeTab === "video-tab") {
-          const selectedVoiceCard = document.querySelector(
-            ".voice-type-card.selected"
-          );
-          const voiceType = selectedVoiceCard
-            ? selectedVoiceCard.getAttribute("data-voice-type")
-            : "character";
-
-          jsonData = {
-            style: document.getElementById("video-style").value || "realistic",
-            shot: {
-              composition: buildVideoComposition(),
-              camera_motion: document.getElementById("camera-movement").value,
-              frame_rate: `${document.getElementById("video-fps").value}fps`,
-              film_grain: document.getElementById("film-grain").value,
-            },
-            subject: {
-              description: document.getElementById("video-subject").value,
-              wardrobe: "", // You can add a field for this
-            },
-            scene: {
-              location: document.getElementById("video-location").value,
-              time_of_day: document.getElementById("time-day").value,
-              environment: document.getElementById("environment-details").value,
-            },
-            visual_details: {
-              action: document.getElementById("video-action").value,
-              props: document.getElementById("video-props").value,
-            },
-            cinematography: {
-              lighting: document.getElementById("lighting-style").value,
-              tone: document.getElementById("video-mood").value,
-            },
-            audio: {
-              dialogue:
-                voiceType === "character"
-                  ? {
-                      character:
-                        document.getElementById("character-name").value ||
-                        "Character",
-                      line: document.getElementById("dialogue-text").value,
-                    }
-                  : {
-                      narrator: document.getElementById("dialogue-text").value,
-                    },
-              background_music:
-                document.getElementById("background-music").value,
-              vocal_style: {
-                voice_tone: document.getElementById("voice-tone").value,
-                delivery: document.getElementById("delivery-style").value,
-                voice_type: voiceType,
-              },
-            },
-            parameters: {
-              duration_seconds: parseInt(
-                document.getElementById("video-duration").value
-              ),
-              frame_rate: parseInt(document.getElementById("video-fps").value),
-            },
-          };
-        } else if (activeTab === "learning-tab") {
-          jsonData = {
-            prompt_type: "learning",
-            topic: document.getElementById("learning-topic").value,
-            knowledge_level: document.getElementById("learning-level").value,
-            learning_objective:
-              document.getElementById("learning-objective").value,
-          };
-        }
-
-        // Remove null or empty fields
-        jsonData = cleanObject(jsonData);
-
-        // Display the result
-        document.getElementById("json-output").textContent = JSON.stringify(
-          jsonData,
-          null,
-          2
-        );
-        document.getElementById("result-container").classList.remove("hidden");
-        document.getElementById("copy-btn").classList.remove("hidden");
-
-        // Scroll to result
-        document
-          .getElementById("result-container")
-          .scrollIntoView({ behavior: "smooth" });
-      }
-
-      function buildComposition() {
-        const angle = document.getElementById("camera-angle").value;
-        const lens = document.getElementById("lens-type").value;
-        const dof = document.getElementById("depth-field").value;
-
-        let composition = [];
-        if (angle) composition.push(angle);
-        if (lens) composition.push(lens);
-        if (dof) composition.push(dof);
-
-        return composition.join(", ");
-      }
-
-      function buildVideoComposition() {
-        const composition = document.getElementById("video-composition").value;
-        const lens = document.getElementById("video-lens").value;
-        const movement = document.getElementById("camera-movement").value;
-
-        let comp = [];
-        if (composition) comp.push(composition);
-        if (lens) comp.push(lens);
-        if (movement) comp.push(movement);
-
-        return comp.join(", ");
-      }
-
-      function cleanObject(obj) {
-        for (let key in obj) {
-          if (obj[key] === null || obj[key] === undefined || obj[key] === "") {
-            delete obj[key];
-          } else if (typeof obj[key] === "object" && obj[key] !== null) {
-            cleanObject(obj[key]);
-            if (Object.keys(obj[key]).length === 0) {
-              delete obj[key];
-            }
-          }
-        }
-        return obj;
-      }
-
-      function copyToClipboard() {
-        const jsonOutput = document.getElementById("json-output");
-        navigator.clipboard
-          .writeText(jsonOutput.textContent)
-          .then(() => {
-            const copyBtn = document.getElementById("copy-btn");
-            const originalText = copyBtn.innerHTML;
-            copyBtn.innerHTML = '<i class="fas fa-check mr-2"></i> Copied!';
-            setTimeout(() => {
-              copyBtn.innerHTML = originalText;
-            }, 2000);
-          })
-          .catch((err) => {
-            console.error("Failed to copy: ", err);
-          });
-      }
-
-      function resetForm() {
-        // Reset all form fields
-        const forms = ["image-form", "video-form", "learning-form"];
-        forms.forEach((formId) => {
-          const form = document.getElementById(formId);
-          const inputs = form.querySelectorAll("input, textarea, select");
-          inputs.forEach((input) => {
-            if (input.type === "checkbox") {
-              input.checked = false;
-            } else if (input.type === "number") {
-              input.value = input.defaultValue;
-            } else {
-              input.value = "";
-            }
-          });
-        });
-
-        // Reset voice type selection
-        document.querySelectorAll(".voice-type-card").forEach((card) => {
-          card.classList.remove("selected");
-        });
-        document.getElementById("character-name-field").classList.add("hidden");
-
-        // Hide result container if visible
-        document.getElementById("result-container").classList.add("hidden");
-      }
-
-      // Initialize with English
-      switchLanguage("en");
     </script>
   </body>
 </html>
